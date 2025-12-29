@@ -258,25 +258,49 @@ const GamePage = () => {
                   <p className="text-lg font-semibold">観戦モード</p>
                   <p className="text-sm text-slate-200/80 mt-1">次のラウンドまでリザーブ。最新の動きを見守ろう。</p>
                 </div>
-              ) : isMyTurn ? (
-                <div className="flex items-center justify-between rounded-2xl border border-amber-300/60 bg-amber-100/10 px-4 py-4">
-                  <span className="text-xl font-bold">あなたのターン</span>
-                  <span className="text-4xl font-black text-amber-200 drop-shadow-lg">残り {timeLeft}秒</span>
-                </div>
               ) : (
-                <div className="flex items-center justify-between rounded-2xl border border-cyan-300/60 bg-cyan-100/10 px-4 py-4">
-                  <span className="text-xl font-semibold">{turnPlayer?.name} のターン</span>
-                  <span className="text-2xl font-bold text-cyan-100">残り {timeLeft}秒</span>
-                </div>
-              )}
-              {isHost && (
-                <div className="mt-3 flex justify-end">
-                  <button
-                    onClick={handleSkipTurn}
-                    className="text-xs rounded-full px-3 py-1 border border-white/20 bg-white/10 text-white hover:bg-white/20 transition"
+                <div className="flex flex-col gap-3">
+                  <div
+                    className={`flex items-center justify-between rounded-2xl border px-4 py-4 ${
+                      isMyTurn
+                        ? 'border-amber-300/60 bg-amber-100/10'
+                        : 'border-cyan-300/60 bg-cyan-100/10'
+                    }`}
                   >
-                    ターンをスキップ（ホスト）
-                  </button>
+                    <span className="text-xl font-bold">
+                      {isMyTurn ? 'あなたのターン' : `${turnPlayer?.name || '---'} のターン`}
+                    </span>
+                    <span className="text-3xl font-black text-amber-200 drop-shadow-lg">残り {timeLeft}秒</span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 items-center justify-between">
+                    <div className="flex gap-2 overflow-x-auto max-w-full">
+                      {activePlayers.map((p, idx) => (
+                        <div
+                          key={p.id}
+                          className={`flex items-center gap-2 rounded-2xl px-3 py-2 border ${
+                            idx === currentTurn
+                              ? 'border-emerald-300/60 bg-emerald-500/20 text-emerald-100'
+                              : 'border-white/10 bg-white/5 text-white'
+                          }`}
+                        >
+                          <span className="w-6 h-6 rounded-full bg-white/10 border border-white/20 text-xs font-bold flex items-center justify-center">
+                            {idx + 1}
+                          </span>
+                          <span className="text-sm font-semibold">{p.name}</span>
+                          {idx === currentTurn && <span className="text-[11px] font-bold text-emerald-100">ターン中</span>}
+                        </div>
+                      ))}
+                    </div>
+                    {isHost && (
+                      <button
+                        onClick={handleSkipTurn}
+                        className="text-xs rounded-full px-3 py-1 border border-white/20 bg-white/10 text-white hover:bg-white/20 transition"
+                      >
+                        ターンをスキップ（ホスト）
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
