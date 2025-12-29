@@ -35,8 +35,14 @@ export const useAbly = (channelName: string) => {
     channelRef.current = channel
 
     return () => {
-      channel.unsubscribe()
-      ably.close()
+      // チャンネルの購読を解除
+      if (channelRef.current) {
+        channelRef.current.unsubscribe()
+      }
+      // Ably接続をクローズ（非同期で安全に）
+      if (ablyRef.current && ablyRef.current.connection.state !== 'closed') {
+        ablyRef.current.close()
+      }
     }
   }, [channelName])
 
