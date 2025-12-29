@@ -30,6 +30,7 @@ const GamePage = () => {
 
   const currentPlayer = players.find((p) => p.id === currentPlayerId)
   const activePlayers = players.filter((p) => !p.isSpectator && !p.isCorrect)
+  const activeCount = activePlayers.length
   const turnPlayer = activePlayers[currentTurn]
   const isMyTurn = turnPlayer?.id === currentPlayerId
   const isSpectator = currentPlayer?.isSpectator || false
@@ -220,6 +221,7 @@ const GamePage = () => {
             <p className="text-[11px] text-cyan-200 font-semibold">
               {isSpectator ? '観戦中' : isMyTurn ? 'あなたのターン' : '待機中'}
             </p>
+            <p className="mt-1 text-xs text-slate-200/70">プレイ中 {activeCount} 人</p>
           </div>
         </div>
 
@@ -350,13 +352,40 @@ const GamePage = () => {
             )}
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl shadow-indigo-900/30 p-6 lg:p-7">
+          <div className="rounded-3xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl shadow-indigo-900/30 p-6 lg:p-7 space-y-4">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold">History</p>
                 <h2 className="text-xl font-bold text-white">回答履歴 ({history.length}件)</h2>
               </div>
             </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+              <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold mb-2">Turn Order</p>
+              <div className="flex flex-col gap-2">
+                {activePlayers.map((p, idx) => (
+                  <div
+                    key={p.id}
+                    className={`flex items-center justify-between rounded-xl px-3 py-2 ${
+                      idx === currentTurn
+                        ? 'bg-emerald-500/20 border border-emerald-300/40 text-emerald-100'
+                        : 'bg-white/5 border border-white/10 text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-white/10 border border-white/20 text-xs font-bold flex items-center justify-center">
+                        {idx + 1}
+                      </span>
+                      <span className="text-sm font-semibold">{p.name}</span>
+                    </div>
+                    {idx === currentTurn && (
+                      <span className="text-[11px] font-bold text-emerald-100">現在の番</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-3 max-h-[calc(100vh-12rem)] overflow-y-auto pr-1">
               {history.length === 0 ? (
                 <p className="text-slate-200/70 text-center py-8">まだ回答がありません</p>
