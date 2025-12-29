@@ -1,11 +1,13 @@
 // アイコンと数字のマッピング
+const BASE_PATH = import.meta.env.BASE_URL || '/'
+
 export const ICON_MAPPING = {
-  1: { name: 'neko', path: '/icons/neko.png', label: 'ねこ' },
-  2: { name: 'hana', path: '/icons/hana.png', label: 'はな' },
-  3: { name: 'tama', path: '/icons/tama.png', label: 'たま' },
-  4: { name: 'bitou', path: '/icons/bitou.png', label: 'びとう' },
-  5: { name: 'omaru', path: '/icons/omaru.png', label: 'おまる' },
-  6: { name: 'oeru', path: '/icons/oeru.png', label: 'おえる' },
+  1: { name: 'neko', path: `${BASE_PATH}icons/neko.png`, label: 'ねこ' },
+  2: { name: 'hana', path: `${BASE_PATH}icons/hana.png`, label: 'はな' },
+  3: { name: 'tama', path: `${BASE_PATH}icons/tama.png`, label: 'たま' },
+  4: { name: 'bitou', path: `${BASE_PATH}icons/bitou.png`, label: 'びとう' },
+  5: { name: 'omaru', path: `${BASE_PATH}icons/omaru.png`, label: 'おまる' },
+  6: { name: 'oeru', path: `${BASE_PATH}icons/oeru.png`, label: 'おえる' },
 } as const
 
 export type IconNumber = 1 | 2 | 3 | 4 | 5 | 6
