@@ -14,7 +14,6 @@ const GamePage = () => {
     players,
     currentTurn,
     history,
-    answer,
     currentPlayerId,
     gameStatus,
     addHistory,
@@ -45,13 +44,65 @@ const GamePage = () => {
   }, [gameStatus, navigate])
 
   useEffect(() => {
-    // 回答のリスニング
-    const handleAnswerSubmitted = (message: any) => {
-      const { history: newHistory, nextTurn, winner, playerId } = message.data
+    // 回答リクエストのリスニング（ホストのみ処理）
+    const handleAnswerRequest = (message: any) => {
+      const { guess, playerId: requestPlayerId } = message.data
       const currentState = useGameStore.getState()
 
-      // 自分自身の回答の場合はスキップ（既にローカルで更新済み）
-      if (playerId === currentState.currentPlayerId) return
+      // ホストのみが回答を受理
+      if (currentState.currentPlayerId !== currentState.roomHost) return
+
+      const activePlayers = currentState.players.filter(p => !p.isSpectator && !p.isCorrect)
+      const currentTurnPlayer = activePlayers[currentState.currentTurn]
+
+      // リクエスト者が現在のターンプレイヤーかチェック
+      if (!currentTurnPlayer || currentTurnPlayer.id !== requestPlayerId) {
+        console.warn('Invalid turn player submitted answer')
+        return
+      }
+
+      const { hit, blow } = calculateHitAndBlow(currentState.answer, guess)
+
+      const newHistory = {
+        playerId: currentTurnPlayer.id,
+        playerName: currentTurnPlayer.name,
+        guess,
+        hit,
+        blow,
+        timestamp: Date.now(),
+      }
+
+      const nextTurn = (currentState.currentTurn + 1) % activePlayers.length
+      let winner: string | null = null
+      if (hit === 4) {
+        winner = currentTurnPlayer.name
+      }
+
+      // ホストが全員に回答結果を配信
+      publish('answer:accepted', {
+        history: newHistory,
+        nextTurn,
+        winner,
+      })
+
+      // ホスト自身の状態も更新
+      addHistory(newHistory)
+      if (winner) {
+        setWinner(winner)
+        setGameStatus('finished')
+      } else {
+        setCurrentTurn(nextTurn)
+        setTimeLeft(60)
+      }
+    }
+
+    // 回答承認のリスニング（全員が処理）
+    const handleAnswerAccepted = (message: any) => {
+      const { history: newHistory, nextTurn, winner } = message.data
+      const currentState = useGameStore.getState()
+
+      // ホスト自身は既に更新済みなのでスキップ
+      if (currentState.currentPlayerId === currentState.roomHost) return
 
       addHistory(newHistory)
 
@@ -64,12 +115,14 @@ const GamePage = () => {
       }
     }
 
-    subscribe('answer:submitted', handleAnswerSubmitted)
+    subscribe('answer:request', handleAnswerRequest)
+    subscribe('answer:accepted', handleAnswerAccepted)
 
     return () => {
-      unsubscribe('answer:submitted', handleAnswerSubmitted)
+      unsubscribe('answer:request', handleAnswerRequest)
+      unsubscribe('answer:accepted', handleAnswerAccepted)
     }
-  }, [subscribe, unsubscribe])
+  }, [])
 
   useEffect(() => {
     if (!isMyTurn) {
@@ -109,43 +162,11 @@ const GamePage = () => {
     // 自分のターンでない場合は回答できない
     if (!isMyTurn) return
 
-    const { hit, blow } = calculateHitAndBlow(answer, guess)
-
-    const newHistory = {
-      playerId: turnPlayer.id,
-      playerName: turnPlayer.name,
+    // ホストに回答リクエストを送信
+    publish('answer:request', {
       guess,
-      hit,
-      blow,
-      timestamp: Date.now(),
-    }
-
-    const activePlayers = players.filter(p => !p.isSpectator && !p.isCorrect)
-    const nextTurn = (currentTurn + 1) % activePlayers.length
-
-    let winner: string | null = null
-    if (hit === 4) {
-      winner = turnPlayer.name
-    }
-
-    // リアルタイムで他のプレイヤーに送信
-    publish('answer:submitted', {
-      history: newHistory,
-      nextTurn,
-      winner,
       playerId: currentPlayerId,
     })
-
-    // ローカルの状態を更新
-    addHistory(newHistory)
-
-    if (winner) {
-      setWinner(winner)
-      setGameStatus('finished')
-    } else {
-      setCurrentTurn(nextTurn)
-      setTimeLeft(60)
-    }
 
     setSelectedNumbers([])
   }

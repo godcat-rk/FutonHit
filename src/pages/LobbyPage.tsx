@@ -31,36 +31,7 @@ const LobbyPage = () => {
   const isHost = currentPlayerId === roomHost
   const currentPlayer = players.find(p => p.id === currentPlayerId)
 
-  useEffect(() => {
-    if (!name) {
-      navigate('/')
-      return
-    }
-
-    if (initialized.current) return
-    initialized.current = true
-
-    const playerId = `player-${Date.now()}-${Math.random()}`
-    setCurrentPlayerId(playerId)
-
-    const newPlayer = {
-      id: playerId,
-      name,
-      answerCount: 0,
-      isCorrect: false,
-      isHost: false,
-      isSpectator: false,
-    }
-
-    addPlayer(newPlayer)
-
-    // 新しいプレイヤーが参加したことをブロードキャスト
-    publish('player:join', newPlayer)
-
-    // 既存のプレイヤー情報をリクエスト
-    publish('player:request-sync', { requesterId: playerId })
-  }, [])
-
+  // 購読の登録（最初に実行）
   useEffect(() => {
     // プレイヤー参加のリスニング
     const handlePlayerJoin = (message: any) => {
@@ -104,6 +75,14 @@ const LobbyPage = () => {
       // ゲーム状態と部屋主情報を同期
       if (syncedStatus && syncedStatus !== 'lobby') {
         setGameStatus(syncedStatus)
+
+        // ゲームが既に進行中の場合、自分を観戦モードに設定
+        if (syncedStatus === 'playing' || syncedStatus === 'preparing') {
+          const myPlayer = currentState.players.find(p => p.id === currentState.currentPlayerId)
+          if (myPlayer) {
+            myPlayer.isSpectator = true
+          }
+        }
       }
       if (syncedHost) {
         setRoomHost(syncedHost)
@@ -112,14 +91,39 @@ const LobbyPage = () => {
 
     // 部屋作成のリスニング
     const handleRoomCreated = (message: any) => {
-      const { hostId } = message.data
+      const { hostId, playerOrder } = message.data
       setGameStatus('preparing')
       setRoomHost(hostId)
+
+      // ホストが決めたプレイヤー順序を適用
+      if (playerOrder) {
+        const currentState = useGameStore.getState()
+        const orderedPlayers = playerOrder.map((id: string) =>
+          currentState.players.find(p => p.id === id)
+        ).filter(Boolean)
+
+        if (orderedPlayers.length > 0) {
+          useGameStore.setState({ players: orderedPlayers })
+        }
+      }
     }
 
     // ゲーム開始のリスニング
     const handleGameStart = (message: any) => {
-      const { answer } = message.data
+      const { answer, playerOrder } = message.data
+
+      // ホストが決めたプレイヤー順序を適用
+      if (playerOrder) {
+        const currentState = useGameStore.getState()
+        const orderedPlayers = playerOrder.map((id: string) =>
+          currentState.players.find(p => p.id === id)
+        ).filter(Boolean)
+
+        if (orderedPlayers.length > 0) {
+          useGameStore.setState({ players: orderedPlayers })
+        }
+      }
+
       setAnswer(answer)
       setGameStatus('playing')
       setCurrentTurn(0)
@@ -139,7 +143,41 @@ const LobbyPage = () => {
       unsubscribe('room:created', handleRoomCreated)
       unsubscribe('game:start', handleGameStart)
     }
-  }, [subscribe, unsubscribe])
+  }, [])
+
+  // プレイヤー初期化（購読完了後に実行）
+  useEffect(() => {
+    if (!name) {
+      navigate('/')
+      return
+    }
+
+    if (initialized.current) return
+    initialized.current = true
+
+    const playerId = `player-${Date.now()}-${Math.random()}`
+    setCurrentPlayerId(playerId)
+
+    const newPlayer = {
+      id: playerId,
+      name,
+      answerCount: 0,
+      isCorrect: false,
+      isHost: false,
+      isSpectator: false,
+    }
+
+    addPlayer(newPlayer)
+
+    // 購読が完了してから通知を送る
+    setTimeout(() => {
+      // 新しいプレイヤーが参加したことをブロードキャスト
+      publish('player:join', newPlayer)
+
+      // 既存のプレイヤー情報をリクエスト
+      publish('player:request-sync', { requesterId: playerId })
+    }, 100)
+  }, [])
 
   useEffect(() => {
     if (gameStatus === 'playing') {
@@ -150,14 +188,29 @@ const LobbyPage = () => {
   const handleCreateRoom = () => {
     if (currentPlayerId) {
       createRoom(currentPlayerId)
-      publish('room:created', { hostId: currentPlayerId })
+      const currentState = useGameStore.getState()
+
+      // ホストが現在のプレイヤー順序を決定して配信
+      const playerOrder = currentState.players.map(p => p.id)
+
+      publish('room:created', {
+        hostId: currentPlayerId,
+        playerOrder,
+      })
     }
   }
 
   const handleStartGame = () => {
     startGame()
     const currentState = useGameStore.getState()
-    publish('game:start', { answer: currentState.answer })
+
+    // ホストがプレイヤー順序を決定して配信
+    const playerOrder = currentState.players.map(p => p.id)
+
+    publish('game:start', {
+      answer: currentState.answer,
+      playerOrder,
+    })
   }
 
   return (

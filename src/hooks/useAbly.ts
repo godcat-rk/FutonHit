@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import * as Ably from 'ably'
 
 const ABLY_API_KEY = import.meta.env.VITE_ABLY_API_KEY
@@ -43,19 +43,19 @@ export const useAbly = (channelName: string) => {
     }
   }, [channelName])
 
-  const publish = (eventName: string, data: any) => {
+  const publish = useCallback((eventName: string, data: any) => {
     if (channelRef.current) {
       channelRef.current.publish(eventName, data)
     }
-  }
+  }, [])
 
-  const subscribe = (eventName: string, callback: (message: Ably.Message) => void) => {
+  const subscribe = useCallback((eventName: string, callback: (message: Ably.Message) => void) => {
     if (channelRef.current) {
       channelRef.current.subscribe(eventName, callback)
     }
-  }
+  }, [])
 
-  const unsubscribe = (eventName: string, callback?: (message: Ably.Message) => void) => {
+  const unsubscribe = useCallback((eventName: string, callback?: (message: Ably.Message) => void) => {
     if (channelRef.current) {
       if (callback) {
         channelRef.current.unsubscribe(eventName, callback)
@@ -63,7 +63,7 @@ export const useAbly = (channelName: string) => {
         channelRef.current.unsubscribe(eventName)
       }
     }
-  }
+  }, [])
 
   return {
     isConnected,
