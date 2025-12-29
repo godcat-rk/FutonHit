@@ -186,8 +186,16 @@ const LobbyPage = () => {
         publish('player:join', newPlayer)
       }
       publish('player:request-sync', { requesterId: playerId })
+
+      // 同期レスポンス待機後、ホストがいない場合は自分をホストに設定
+      setTimeout(() => {
+        const state = useGameStore.getState()
+        if (!state.roomHost && state.currentPlayerId) {
+          setRoomHost(state.currentPlayerId)
+        }
+      }, 500)
     }, 100)
-  }, [addPlayer, currentPlayerId, name, navigate, persistedPlayerId, players, publish, setCurrentPlayerId])
+  }, [addPlayer, currentPlayerId, name, navigate, persistedPlayerId, players, publish, setCurrentPlayerId, setRoomHost])
 
   // ブラウザクローズ時に離脱通知を送る
   useEffect(() => {
