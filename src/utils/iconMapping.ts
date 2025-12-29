@@ -8,12 +8,16 @@ export const ICON_MAPPING = {
   4: { name: 'bitou', path: `${BASE_PATH}icons/bitou.png`, label: 'びとう' },
   5: { name: 'omaru', path: `${BASE_PATH}icons/omaru.png`, label: 'おまる' },
   6: { name: 'oeru', path: `${BASE_PATH}icons/oeru.png`, label: 'おえる' },
+  7: { name: 'rukario', path: `${BASE_PATH}icons/rukario.png`, label: 'るかりお' },
+  8: { name: 'shari', path: `${BASE_PATH}icons/shari.png`, label: 'しゃり' },
+  9: { name: 'tororo', path: `${BASE_PATH}icons/tororo.png`, label: 'とろろ' },
+  10: { name: 'yatyunri', path: `${BASE_PATH}icons/yatyunri.png`, label: 'やちゅんり' },
 } as const
 
-export type IconNumber = 1 | 2 | 3 | 4 | 5 | 6
+export type IconNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
 
 export const getIconPath = (num: number): string => {
-  if (num < 1 || num > 6) {
+  if (num < 1 || num > 10) {
     console.warn(`Invalid icon number: ${num}. Using default.`)
     return ICON_MAPPING[1].path
   }
@@ -21,10 +25,10 @@ export const getIconPath = (num: number): string => {
 }
 
 export const getIconLabel = (num: number): string => {
-  if (num < 1 || num > 6) {
+  if (num < 1 || num > 10) {
     return ''
   }
   return ICON_MAPPING[num as IconNumber].label
 }
 
-export const TOTAL_ICONS = 6
+export const TOTAL_ICONS = 10

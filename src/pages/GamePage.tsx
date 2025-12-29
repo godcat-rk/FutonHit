@@ -323,7 +323,7 @@ const GamePage = () => {
                     <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold">Select</p>
                     <h2 className="text-xl font-bold text-white">アイコンを選択 ({selectedNumbers.length}/4)</h2>
                   </div>
-                  <span className="text-sm text-slate-200/80">順不同でOK</span>
+                  <span className="text-sm text-slate-200/80">アイコン募集中</span>
                 </div>
 
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-6">

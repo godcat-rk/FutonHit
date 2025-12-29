@@ -1,5 +1,7 @@
+import { TOTAL_ICONS } from './iconMapping'
+
 export const generateAnswer = (): number[] => {
-  const numbers = Array.from({ length: 6 }, (_, i) => i + 1)
+  const numbers = Array.from({ length: TOTAL_ICONS }, (_, i) => i + 1)
   const answer: number[] = []
 
   for (let i = 0; i < 4; i++) {

@@ -49,7 +49,7 @@ const TopPage = () => {
             <div className="mt-6 grid grid-cols-2 gap-3 text-sm text-slate-100/80">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-xs uppercase text-cyan-200 tracking-wide">ルール</p>
-                <p className="mt-1 font-semibold">6種のアイコンから4つの並びを当てる</p>
+                <p className="mt-1 font-semibold">アイコンから4つの並びを当てる</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-xs uppercase text-cyan-200 tracking-wide">判定</p>
