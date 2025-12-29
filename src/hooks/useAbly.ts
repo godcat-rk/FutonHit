@@ -10,11 +10,10 @@ export const useAbly = (channelName: string) => {
 
   useEffect(() => {
     if (!ABLY_API_KEY) {
-      console.error('Ably API key is not configured')
+      console.error('Ably API key is not configured. Set VITE_ABLY_API_KEY.')
       return
     }
 
-    // Ably接続の初期化
     const ably = new Ably.Realtime({
       key: ABLY_API_KEY,
       clientId: `client-${Date.now()}-${Math.random()}`,
@@ -22,7 +21,6 @@ export const useAbly = (channelName: string) => {
 
     ablyRef.current = ably
 
-    // 接続状態の監視
     ably.connection.on('connected', () => {
       console.log('Ably connected')
       setIsConnected(true)
@@ -33,7 +31,6 @@ export const useAbly = (channelName: string) => {
       setIsConnected(false)
     })
 
-    // チャンネルの取得
     const channel = ably.channels.get(channelName)
     channelRef.current = channel
 
