@@ -290,7 +290,7 @@ const LobbyPage = () => {
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-lg font-semibold mb-3">ゲーム情報</h2>
           <ul className="text-sm text-gray-600 space-y-2">
-            <li>• 1-13の数字から4つを当てるゲーム</li>
+            <li>• 6種類のアイコンから4つを当てるゲーム</li>
             <li>• 各プレイヤーは60秒以内に回答</li>
             <li>• 最も早く正解した人が勝利</li>
             <li>• 回答履歴は全員に公開されます</li>

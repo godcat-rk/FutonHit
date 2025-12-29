@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/useGameStore'
 import { calculateHitAndBlow, generateRandomGuess } from '../utils/gameLogic'
 import { useAbly } from '../hooks/useAbly'
+import { getIconPath, TOTAL_ICONS } from '../utils/iconMapping'
 
 const GAME_CHANNEL = 'futonhit-game'
 
@@ -247,9 +248,13 @@ const GamePage = () => {
                     {latestHistory.guess.map((num, i) => (
                       <div
                         key={i}
-                        className="w-16 h-16 bg-white border-2 border-gray-300 rounded-lg flex items-center justify-center text-2xl font-bold"
+                        className="w-16 h-16 bg-white border-2 border-gray-300 rounded-lg flex items-center justify-center p-1"
                       >
-                        {num}
+                        <img
+                          src={getIconPath(num)}
+                          alt={`Icon ${num}`}
+                          className="w-full h-full object-contain"
+                        />
                       </div>
                     ))}
                   </div>
@@ -261,21 +266,25 @@ const GamePage = () => {
             {!isSpectator && (
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <h2 className="text-lg font-semibold mb-4">
-                  数字を選択 ({selectedNumbers.length}/4)
+                  アイコンを選択 ({selectedNumbers.length}/4)
                 </h2>
-                <div className="grid grid-cols-7 gap-2 mb-6">
-                  {Array.from({ length: 13 }, (_, i) => i + 1).map((num) => (
+                <div className="grid grid-cols-3 gap-3 mb-6 max-w-md mx-auto">
+                  {Array.from({ length: TOTAL_ICONS }, (_, i) => i + 1).map((num) => (
                     <button
                       key={num}
                       onClick={() => toggleNumber(num)}
                       disabled={!isMyTurn}
-                      className={`aspect-square rounded-lg text-xl font-bold transition-all ${
+                      className={`aspect-square rounded-lg transition-all p-3 ${
                         selectedNumbers.includes(num)
-                          ? 'bg-blue-600 text-white scale-110 shadow-lg'
-                          : 'bg-gray-200 hover:bg-gray-300'
+                          ? 'bg-blue-100 border-4 border-blue-600 scale-105 shadow-lg'
+                          : 'bg-gray-100 border-2 border-gray-300 hover:bg-gray-200'
                       } ${!isMyTurn ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      {num}
+                      <img
+                        src={getIconPath(num)}
+                        alt={`Icon ${num}`}
+                        className="w-full h-full object-contain"
+                      />
                     </button>
                   ))}
                 </div>
@@ -286,9 +295,17 @@ const GamePage = () => {
                     {[0, 1, 2, 3].map((i) => (
                       <div
                         key={i}
-                        className="w-20 h-20 border-2 border-gray-300 rounded-lg flex items-center justify-center text-3xl font-bold bg-white"
+                        className="w-20 h-20 border-2 border-gray-300 rounded-lg flex items-center justify-center bg-white p-2"
                       >
-                        {selectedNumbers[i] || '?'}
+                        {selectedNumbers[i] ? (
+                          <img
+                            src={getIconPath(selectedNumbers[i])}
+                            alt={`Selected ${selectedNumbers[i]}`}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <span className="text-3xl text-gray-400">?</span>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -337,9 +354,13 @@ const GamePage = () => {
                         {h.guess.map((num, i) => (
                           <div
                             key={i}
-                            className="flex-1 aspect-square bg-white border border-gray-300 rounded flex items-center justify-center text-sm font-bold"
+                            className="flex-1 aspect-square bg-white border border-gray-300 rounded flex items-center justify-center p-1"
                           >
-                            {num}
+                            <img
+                              src={getIconPath(num)}
+                              alt={`Icon ${num}`}
+                              className="w-full h-full object-contain"
+                            />
                           </div>
                         ))}
                       </div>

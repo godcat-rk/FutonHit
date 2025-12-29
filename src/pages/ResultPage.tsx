@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/useGameStore'
+import { getIconPath } from '../utils/iconMapping'
 
 const ResultPage = () => {
   const navigate = useNavigate()
@@ -36,13 +37,17 @@ const ResultPage = () => {
 
         <div className="mb-6 p-4 bg-blue-50 rounded-lg">
           <p className="text-center text-gray-700 mb-2">正解</p>
-          <div className="flex justify-center gap-2">
+          <div className="flex justify-center gap-3">
             {answer.map((num, i) => (
               <div
                 key={i}
-                className="w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center text-xl font-bold"
+                className="w-16 h-16 bg-white rounded-lg flex items-center justify-center border-2 border-blue-400 p-2"
               >
-                {num}
+                <img
+                  src={getIconPath(num)}
+                  alt={`Answer ${num}`}
+                  className="w-full h-full object-contain"
+                />
               </div>
             ))}
           </div>
