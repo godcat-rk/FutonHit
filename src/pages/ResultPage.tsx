@@ -43,7 +43,6 @@ const ResultPage = () => {
             <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
               <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold">Winner</p>
               <h2 className="text-3xl font-black text-white mt-2">{winner || '---'}</h2>
-              <p className="text-sm text-slate-200/80 mt-1">最も早く正解に辿り着いたプレイヤー</p>
               <button
                 onClick={handleReturnToLobby}
                 className="mt-6 w-full rounded-2xl bg-gradient-to-r from-amber-400 via-pink-500 to-indigo-500 px-6 py-3 text-base font-bold text-white shadow-xl shadow-amber-900/30 transition hover:shadow-amber-500/40"
