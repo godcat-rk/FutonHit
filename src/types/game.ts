@@ -1,10 +1,12 @@
-export type GameStatus = 'waiting' | 'playing' | 'finished'
+export type GameStatus = 'lobby' | 'preparing' | 'playing' | 'finished'
 
 export interface Player {
   id: string
   name: string
   answerCount: number
   isCorrect: boolean
+  isHost: boolean
+  isSpectator: boolean
 }
 
 export interface AnswerHistory {
@@ -23,4 +25,6 @@ export interface GameState {
   history: AnswerHistory[]
   gameStatus: GameStatus
   winner: string | null
+  roomHost: string | null
+  currentPlayerId: string | null
 }

@@ -20,7 +20,7 @@ const TopPage = () => {
       return
     }
 
-    navigate('/game', { state: { name } })
+    navigate('/lobby', { state: { name } })
   }
 
   return (

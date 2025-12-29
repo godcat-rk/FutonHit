@@ -1,26 +1,43 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useGameStore } from '../store/useGameStore'
 
 const ResultPage = () => {
   const navigate = useNavigate()
+  const { winner, answer, resetGame } = useGameStore()
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      resetGame()
+      navigate('/lobby')
+    }, 10000)
+
+    return () => clearTimeout(timer)
+  }, [resetGame, navigate])
+
+  const handleReturnToLobby = () => {
+    resetGame()
+    navigate('/lobby')
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
         <h1 className="text-4xl font-bold text-center mb-4 text-yellow-600">
-          🏆 勝利！
+          🏆 ゲーム終了！
         </h1>
 
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+        <div className="mb-6 p-4 bg-yellow-50 rounded-lg border-2 border-yellow-300">
           <p className="text-center text-gray-700 mb-2">勝者</p>
           <p className="text-2xl font-bold text-center text-blue-600">
-            Player 1
+            {winner || '---'}
           </p>
         </div>
 
         <div className="mb-6 p-4 bg-blue-50 rounded-lg">
           <p className="text-center text-gray-700 mb-2">正解</p>
           <div className="flex justify-center gap-2">
-            {[5, 8, 12, 3].map((num, i) => (
+            {answer.map((num, i) => (
               <div
                 key={i}
                 className="w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center text-xl font-bold"
@@ -31,11 +48,17 @@ const ResultPage = () => {
           </div>
         </div>
 
+        <div className="mb-6 p-3 bg-gray-100 rounded-lg text-center">
+          <p className="text-sm text-gray-600">
+            10秒後に自動的にロビーに戻ります
+          </p>
+        </div>
+
         <button
-          onClick={() => navigate('/')}
+          onClick={handleReturnToLobby}
           className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
         >
-          もう一度プレイ
+          ロビーに戻る
         </button>
       </div>
     </div>
