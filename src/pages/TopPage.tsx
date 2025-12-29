@@ -1,15 +1,26 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+const GAME_PASSWORD = 'nekonekofever'
+
 const TopPage = () => {
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const navigate = useNavigate()
 
   const handleStart = () => {
-    if (name && password) {
-      navigate('/game', { state: { name, password } })
+    if (!name) {
+      setError('名前を入力してください')
+      return
     }
+
+    if (password !== GAME_PASSWORD) {
+      setError('パスワードが正しくありません')
+      return
+    }
+
+    navigate('/game', { state: { name } })
   }
 
   return (
@@ -30,7 +41,10 @@ const TopPage = () => {
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value)
+                setError('')
+              }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="あなたの名前を入力"
             />
@@ -43,11 +57,20 @@ const TopPage = () => {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                setError('')
+              }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="ゲームパスワード"
             />
           </div>
+
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600 text-center">{error}</p>
+            </div>
+          )}
 
           <button
             onClick={handleStart}
