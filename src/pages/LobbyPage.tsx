@@ -10,6 +10,7 @@ const LobbyPage = () => {
   const navigate = useNavigate()
   const routeState = location.state as { name?: string } | undefined
   const persistedName = typeof localStorage !== 'undefined' ? localStorage.getItem('playerName') : null
+  const persistedPlayerId = typeof localStorage !== 'undefined' ? localStorage.getItem('playerId') : null
   const name = routeState?.name || persistedName || ''
   const initialized = useRef(false)
   const { publish, subscribe, unsubscribe } = useAbly(GAME_CHANNEL)
@@ -151,8 +152,11 @@ const LobbyPage = () => {
     if (initialized.current) return
     initialized.current = true
 
-    const playerId = `player-${Date.now()}-${Math.random()}`
+    const playerId = persistedPlayerId || `player-${Date.now()}-${Math.random()}`
     setCurrentPlayerId(playerId)
+    if (!persistedPlayerId) {
+      localStorage.setItem('playerId', playerId)
+    }
 
     const newPlayer = {
       id: playerId,
@@ -163,13 +167,18 @@ const LobbyPage = () => {
       isSpectator: false,
     }
 
-    addPlayer(newPlayer)
+    const alreadyExists = players.some((p) => p.id === playerId)
+    if (!alreadyExists) {
+      addPlayer(newPlayer)
+    }
 
     setTimeout(() => {
-      publish('player:join', newPlayer)
+      if (!alreadyExists) {
+        publish('player:join', newPlayer)
+      }
       publish('player:request-sync', { requesterId: playerId })
     }, 100)
-  }, [addPlayer, currentPlayerId, name, navigate, publish, setCurrentPlayerId])
+  }, [addPlayer, currentPlayerId, name, navigate, persistedPlayerId, players, publish, setCurrentPlayerId])
 
   // ブラウザクローズ時に離脱通知を送る
   useEffect(() => {
