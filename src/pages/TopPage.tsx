@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const GAME_PASSWORD = 'nekonekofever'
+const GAME_PASSWORD = 'futon'
 
 const TopPage = () => {
   const [name, setName] = useState('')

@@ -5,19 +5,19 @@ import { getIconPath } from '../utils/iconMapping'
 
 const ResultPage = () => {
   const navigate = useNavigate()
-  const { winner, answer, resetGame } = useGameStore()
+  const { winner, answer, setGameStatus } = useGameStore()
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      resetGame()
+      setGameStatus('lobby')
       navigate('/lobby')
     }, 10000)
 
     return () => clearTimeout(timer)
-  }, [resetGame, navigate])
+  }, [setGameStatus, navigate])
 
   const handleReturnToLobby = () => {
-    resetGame()
+    setGameStatus('lobby')
     navigate('/lobby')
   }
 

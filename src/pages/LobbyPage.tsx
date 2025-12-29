@@ -147,6 +147,11 @@ const LobbyPage = () => {
 
   // プレイヤー初期化（購読完了後に実行）
   useEffect(() => {
+    // 既にプレイヤーIDが設定されている場合は初期化をスキップ（ゲーム終了後の戻り）
+    if (currentPlayerId) {
+      return
+    }
+
     if (!name) {
       navigate('/')
       return
