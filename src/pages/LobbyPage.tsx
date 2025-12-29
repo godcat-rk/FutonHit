@@ -23,7 +23,6 @@ const LobbyPage = () => {
     currentPlayerId,
     addPlayer,
     removePlayer,
-    createRoom,
     startGame,
     setCurrentPlayerId,
     setGameStatus,
@@ -73,7 +72,7 @@ const LobbyPage = () => {
 
       if (syncedStatus && syncedStatus !== 'lobby') {
         setGameStatus(syncedStatus)
-        if (syncedStatus === 'playing' || syncedStatus === 'preparing') {
+        if (syncedStatus === 'playing') {
           // 途中参加は観戦モードへ強制
           const updated = currentState.players.map((p) =>
             p.id === currentState.currentPlayerId ? { ...p, isSpectator: true } : p
@@ -86,32 +85,8 @@ const LobbyPage = () => {
       }
     }
 
-    const handleRoomCreated = (message: any) => {
-      const { hostId, playerOrder } = message.data
-      const state = useGameStore.getState()
-
-      // すでに他のホストが存在する場合は無視（1部屋のみ）
-      if (state.roomHost && state.roomHost !== hostId) {
-        return
-      }
-
-      setGameStatus('preparing')
-      setRoomHost(hostId)
-
-      if (playerOrder) {
-        const currentState = useGameStore.getState()
-        const orderedPlayers = playerOrder
-          .map((id: string) => currentState.players.find((p) => p.id === id))
-          .filter(Boolean)
-
-        if (orderedPlayers.length > 0) {
-          useGameStore.setState({ players: orderedPlayers as typeof players })
-        }
-      }
-    }
-
     const handleGameStart = (message: any) => {
-      const { answer, playerOrder } = message.data
+      const { answer, playerOrder, hostId } = message.data
 
       if (playerOrder) {
         const currentState = useGameStore.getState()
@@ -128,6 +103,7 @@ const LobbyPage = () => {
       setGameStatus('playing')
       setCurrentTurn(0)
       setHistory([])
+      setRoomHost(hostId)
     }
 
     const handlePlayerLeave = (message: any) => {
@@ -153,7 +129,6 @@ const LobbyPage = () => {
     subscribe('player:join', handlePlayerJoin)
     subscribe('player:request-sync', handlePlayerRequestSync)
     subscribe('player:sync-response', handlePlayerSyncResponse)
-    subscribe('room:created', handleRoomCreated)
     subscribe('game:start', handleGameStart)
     subscribe('player:leave', handlePlayerLeave)
     subscribe('player:kick', handlePlayerKick)
@@ -163,7 +138,6 @@ const LobbyPage = () => {
       unsubscribe('player:join', handlePlayerJoin)
       unsubscribe('player:request-sync', handlePlayerRequestSync)
       unsubscribe('player:sync-response', handlePlayerSyncResponse)
-      unsubscribe('room:created', handleRoomCreated)
       unsubscribe('game:start', handleGameStart)
       unsubscribe('player:leave', handlePlayerLeave)
       unsubscribe('player:kick', handlePlayerKick)
@@ -275,26 +249,21 @@ const LobbyPage = () => {
     }
   }, [gameStatus, navigate])
 
-  const handleCreateRoom = () => {
-    // すでに部屋がある場合は新規作成しない
-    if (!currentPlayerId || roomHost) return
-
-    createRoom(currentPlayerId)
-    const currentState = useGameStore.getState()
-    const playerOrder = currentState.players.map((p) => p.id)
-    publish('room:created', { hostId: currentPlayerId, playerOrder })
-  }
-
   const handleStartGame = () => {
-    if (!isHost) return
+    if (!currentPlayerId) return
+
     startGame()
+    setRoomHost(currentPlayerId)
+
     const currentState = useGameStore.getState()
     const playerOrder = [...currentState.players.map((p) => p.id)]
+
     // ランダムな順番にシャッフル
     for (let i = playerOrder.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
       ;[playerOrder[i], playerOrder[j]] = [playerOrder[j], playerOrder[i]]
     }
+
     // ホスト側も同じ順番でローカル反映
     const orderedPlayers = playerOrder
       .map((id: string) => currentState.players.find((p) => p.id === id))
@@ -302,7 +271,12 @@ const LobbyPage = () => {
     if (orderedPlayers.length > 0) {
       useGameStore.setState({ players: orderedPlayers as typeof players })
     }
-    publish('game:start', { answer: currentState.answer, playerOrder })
+
+    publish('game:start', {
+      answer: currentState.answer,
+      playerOrder,
+      hostId: currentPlayerId
+    })
   }
 
   const handleKick = (playerId: string) => {
@@ -393,29 +367,12 @@ const LobbyPage = () => {
             <div className="mt-8 space-y-3">
               {gameStatus === 'lobby' && (
                 <button
-                  onClick={handleCreateRoom}
-                  className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500 px-6 py-3 text-base font-bold text-white shadow-lg shadow-indigo-900/30 transition hover:shadow-indigo-500/50"
+                  onClick={handleStartGame}
+                  disabled={players.length === 0}
+                  className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500 px-6 py-3 text-base font-bold text-white shadow-lg shadow-indigo-900/30 transition hover:shadow-indigo-500/50 disabled:from-slate-400 disabled:via-slate-400 disabled:to-slate-400 disabled:text-slate-200"
                 >
-                  READY
+                  ゲーム開始
                 </button>
-              )}
-
-              {gameStatus === 'preparing' && (
-                <>
-                  {isHost ? (
-                    <button
-                      onClick={handleStartGame}
-                      disabled={players.length === 0}
-                      className="w-full rounded-2xl bg-white text-slate-900 px-6 py-3 text-base font-bold shadow-lg shadow-indigo-900/30 transition hover:-translate-y-0.5 disabled:bg-slate-200 disabled:text-slate-500"
-                    >
-                      ゲーム開始
-                    </button>
-                  ) : (
-                    <div className="w-full rounded-2xl border border-amber-200/50 bg-amber-50/80 px-4 py-4 text-center text-amber-800 font-semibold">
-                      ホストがゲームを開始するまでお待ちください
-                    </div>
-                  )}
-                </>
               )}
             </div>
           </div>
@@ -450,7 +407,6 @@ const LobbyPage = () => {
                 />
                 <p className="text-sm">
                   {gameStatus === 'lobby' && 'ロビー待機中'}
-                  {gameStatus === 'preparing' && 'ゲーム準備中'}
                   {gameStatus === 'playing' && 'ゲーム進行中'}
                 </p>
               </div>
