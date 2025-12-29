@@ -47,7 +47,11 @@ const GamePage = () => {
   useEffect(() => {
     // 回答のリスニング
     const handleAnswerSubmitted = (message: any) => {
-      const { history: newHistory, nextTurn, winner } = message.data
+      const { history: newHistory, nextTurn, winner, playerId } = message.data
+      const currentState = useGameStore.getState()
+
+      // 自分自身の回答の場合はスキップ（既にローカルで更新済み）
+      if (playerId === currentState.currentPlayerId) return
 
       addHistory(newHistory)
 
@@ -102,6 +106,8 @@ const GamePage = () => {
 
   const submitAnswer = (guess: number[]) => {
     if (!turnPlayer || !currentPlayerId) return
+    // 自分のターンでない場合は回答できない
+    if (!isMyTurn) return
 
     const { hit, blow } = calculateHitAndBlow(answer, guess)
 
@@ -127,6 +133,7 @@ const GamePage = () => {
       history: newHistory,
       nextTurn,
       winner,
+      playerId: currentPlayerId,
     })
 
     // ローカルの状態を更新

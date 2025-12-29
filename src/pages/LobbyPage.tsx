@@ -56,13 +56,58 @@ const LobbyPage = () => {
 
     // 新しいプレイヤーが参加したことをブロードキャスト
     publish('player:join', newPlayer)
+
+    // 既存のプレイヤー情報をリクエスト
+    publish('player:request-sync', { requesterId: playerId })
   }, [])
 
   useEffect(() => {
     // プレイヤー参加のリスニング
     const handlePlayerJoin = (message: any) => {
       const player = message.data
+      const currentState = useGameStore.getState()
+
+      // 自分自身や既存のプレイヤーは追加しない
+      if (player.id === currentState.currentPlayerId) return
+      if (currentState.players.some(p => p.id === player.id)) return
+
       addPlayer(player)
+    }
+
+    // プレイヤー情報同期リクエストのリスニング
+    const handlePlayerRequestSync = (message: any) => {
+      const { requesterId } = message.data
+      const currentState = useGameStore.getState()
+
+      // リクエスト者以外の全プレイヤー情報を送信
+      if (requesterId !== currentState.currentPlayerId) {
+        publish('player:sync-response', {
+          players: currentState.players,
+          gameStatus: currentState.gameStatus,
+          roomHost: currentState.roomHost,
+        })
+      }
+    }
+
+    // プレイヤー情報同期レスポンスのリスニング
+    const handlePlayerSyncResponse = (message: any) => {
+      const { players: syncedPlayers, gameStatus: syncedStatus, roomHost: syncedHost } = message.data
+      const currentState = useGameStore.getState()
+
+      // 受信したプレイヤー情報を追加（重複チェック）
+      syncedPlayers.forEach((player: any) => {
+        if (player.id !== currentState.currentPlayerId && !currentState.players.some(p => p.id === player.id)) {
+          addPlayer(player)
+        }
+      })
+
+      // ゲーム状態と部屋主情報を同期
+      if (syncedStatus && syncedStatus !== 'lobby') {
+        setGameStatus(syncedStatus)
+      }
+      if (syncedHost) {
+        setRoomHost(syncedHost)
+      }
     }
 
     // 部屋作成のリスニング
@@ -82,11 +127,15 @@ const LobbyPage = () => {
     }
 
     subscribe('player:join', handlePlayerJoin)
+    subscribe('player:request-sync', handlePlayerRequestSync)
+    subscribe('player:sync-response', handlePlayerSyncResponse)
     subscribe('room:created', handleRoomCreated)
     subscribe('game:start', handleGameStart)
 
     return () => {
       unsubscribe('player:join', handlePlayerJoin)
+      unsubscribe('player:request-sync', handlePlayerRequestSync)
+      unsubscribe('player:sync-response', handlePlayerSyncResponse)
       unsubscribe('room:created', handleRoomCreated)
       unsubscribe('game:start', handleGameStart)
     }
