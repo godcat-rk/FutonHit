@@ -46,13 +46,15 @@ const LobbyPage = () => {
     const handlePlayerRequestSync = (message: any) => {
       const { requesterId } = message.data
       const currentState = useGameStore.getState()
-      if (requesterId !== currentState.currentPlayerId) {
-        publish('player:sync-response', {
-          players: currentState.players,
-          gameStatus: currentState.gameStatus,
-          roomHost: currentState.roomHost,
-        })
-      }
+      // 自分からのリクエストは無視
+      if (requesterId === currentState.currentPlayerId) return
+
+      // 他のプレイヤーからのリクエストには応答
+      publish('player:sync-response', {
+        players: currentState.players,
+        gameStatus: currentState.gameStatus,
+        roomHost: currentState.roomHost,
+      })
     }
 
     const handlePlayerSyncResponse = (message: any) => {
