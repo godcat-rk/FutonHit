@@ -15,6 +15,9 @@ interface GameStore extends GameState {
   createRoom: (hostId: string) => void
   startGame: () => void
   resetGame: () => void
+  syncGameState: (state: Partial<GameState>) => void
+  setPlayers: (players: Player[]) => void
+  setHistory: (history: AnswerHistory[]) => void
 }
 
 const initialState: GameState = {
@@ -40,6 +43,8 @@ export const useGameStore = create<GameStore>((set) => ({
   setWinner: (winner) => set({ winner }),
   setRoomHost: (hostId) => set({ roomHost: hostId }),
   setCurrentPlayerId: (playerId) => set({ currentPlayerId: playerId }),
+  setPlayers: (players) => set({ players }),
+  setHistory: (history) => set({ history }),
 
   createRoom: (hostId) => set({
     gameStatus: 'preparing',
@@ -57,4 +62,6 @@ export const useGameStore = create<GameStore>((set) => ({
     ...initialState,
     players: [],
   }),
+
+  syncGameState: (state) => set((current) => ({ ...current, ...state })),
 }))

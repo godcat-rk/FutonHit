@@ -2,9 +2,14 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/useGameStore'
 import { calculateHitAndBlow, generateRandomGuess } from '../utils/gameLogic'
+import { useAbly } from '../hooks/useAbly'
+
+const GAME_CHANNEL = 'futonhit-game'
 
 const GamePage = () => {
   const navigate = useNavigate()
+  const { publish, subscribe, unsubscribe } = useAbly(GAME_CHANNEL)
+
   const {
     players,
     currentTurn,
@@ -38,6 +43,29 @@ const GamePage = () => {
       navigate('/result')
     }
   }, [gameStatus, navigate])
+
+  useEffect(() => {
+    // 回答のリスニング
+    const handleAnswerSubmitted = (message: any) => {
+      const { history: newHistory, nextTurn, winner } = message.data
+
+      addHistory(newHistory)
+
+      if (winner) {
+        setWinner(winner)
+        setGameStatus('finished')
+      } else {
+        setCurrentTurn(nextTurn)
+        setTimeLeft(60)
+      }
+    }
+
+    subscribe('answer:submitted', handleAnswerSubmitted)
+
+    return () => {
+      unsubscribe('answer:submitted', handleAnswerSubmitted)
+    }
+  }, [subscribe, unsubscribe])
 
   useEffect(() => {
     if (!isMyTurn) {
@@ -86,18 +114,32 @@ const GamePage = () => {
       timestamp: Date.now(),
     }
 
-    addHistory(newHistory)
-
-    if (hit === 4) {
-      setWinner(turnPlayer.name)
-      setGameStatus('finished')
-      return
-    }
-
     const activePlayers = players.filter(p => !p.isSpectator && !p.isCorrect)
     const nextTurn = (currentTurn + 1) % activePlayers.length
-    setCurrentTurn(nextTurn)
-    setTimeLeft(60)
+
+    let winner: string | null = null
+    if (hit === 4) {
+      winner = turnPlayer.name
+    }
+
+    // リアルタイムで他のプレイヤーに送信
+    publish('answer:submitted', {
+      history: newHistory,
+      nextTurn,
+      winner,
+    })
+
+    // ローカルの状態を更新
+    addHistory(newHistory)
+
+    if (winner) {
+      setWinner(winner)
+      setGameStatus('finished')
+    } else {
+      setCurrentTurn(nextTurn)
+      setTimeLeft(60)
+    }
+
     setSelectedNumbers([])
   }
 

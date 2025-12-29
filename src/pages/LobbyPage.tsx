@@ -1,12 +1,16 @@
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/useGameStore'
+import { useAbly } from '../hooks/useAbly'
+
+const GAME_CHANNEL = 'futonhit-game'
 
 const LobbyPage = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { name } = location.state || {}
   const initialized = useRef(false)
+  const { publish, subscribe, unsubscribe } = useAbly(GAME_CHANNEL)
 
   const {
     players,
@@ -17,6 +21,11 @@ const LobbyPage = () => {
     createRoom,
     startGame,
     setCurrentPlayerId,
+    setGameStatus,
+    setRoomHost,
+    setAnswer,
+    setCurrentTurn,
+    setHistory,
   } = useGameStore()
 
   const isHost = currentPlayerId === roomHost
@@ -44,7 +53,44 @@ const LobbyPage = () => {
     }
 
     addPlayer(newPlayer)
+
+    // 新しいプレイヤーが参加したことをブロードキャスト
+    publish('player:join', newPlayer)
   }, [])
+
+  useEffect(() => {
+    // プレイヤー参加のリスニング
+    const handlePlayerJoin = (message: any) => {
+      const player = message.data
+      addPlayer(player)
+    }
+
+    // 部屋作成のリスニング
+    const handleRoomCreated = (message: any) => {
+      const { hostId } = message.data
+      setGameStatus('preparing')
+      setRoomHost(hostId)
+    }
+
+    // ゲーム開始のリスニング
+    const handleGameStart = (message: any) => {
+      const { answer } = message.data
+      setAnswer(answer)
+      setGameStatus('playing')
+      setCurrentTurn(0)
+      setHistory([])
+    }
+
+    subscribe('player:join', handlePlayerJoin)
+    subscribe('room:created', handleRoomCreated)
+    subscribe('game:start', handleGameStart)
+
+    return () => {
+      unsubscribe('player:join', handlePlayerJoin)
+      unsubscribe('room:created', handleRoomCreated)
+      unsubscribe('game:start', handleGameStart)
+    }
+  }, [subscribe, unsubscribe])
 
   useEffect(() => {
     if (gameStatus === 'playing') {
@@ -55,11 +101,14 @@ const LobbyPage = () => {
   const handleCreateRoom = () => {
     if (currentPlayerId) {
       createRoom(currentPlayerId)
+      publish('room:created', { hostId: currentPlayerId })
     }
   }
 
   const handleStartGame = () => {
     startGame()
+    const currentState = useGameStore.getState()
+    publish('game:start', { answer: currentState.answer })
   }
 
   return (
@@ -140,7 +189,7 @@ const LobbyPage = () => {
           <h2 className="text-lg font-semibold mb-3">ゲーム情報</h2>
           <ul className="text-sm text-gray-600 space-y-2">
             <li>• 1-13の数字から4つを当てるゲーム</li>
-            <li>• 各プレイヤーは20秒以内に回答</li>
+            <li>• 各プレイヤーは60秒以内に回答</li>
             <li>• 最も早く正解した人が勝利</li>
             <li>• 回答履歴は全員に公開されます</li>
           </ul>
