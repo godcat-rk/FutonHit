@@ -138,17 +138,22 @@ const GamePage = () => {
     }
   }, [addHistory, publish, removePlayer, setCurrentTurn, setGameStatus, setWinner, subscribe, unsubscribe, navigate])
 
+  // ターンが変わるたびにカウントをリセット
   useEffect(() => {
+    setTimeLeft(60)
     if (!isMyTurn) {
-      setTimeLeft(60)
       setSelectedNumbers([])
-      return
     }
+  }, [currentTurn, isMyTurn])
 
+  // 常にカウントダウンを進める（ホスト/参加者問わず）
+  useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          handleAutoSubmit()
+          if (isMyTurn) {
+            handleAutoSubmit()
+          }
           return 60
         }
         return prev - 1
@@ -222,6 +227,31 @@ const GamePage = () => {
               {isSpectator ? '観戦中' : isMyTurn ? 'あなたのターン' : '待機中'}
             </p>
             <p className="mt-1 text-xs text-slate-200/70">プレイ中 {activeCount} 人</p>
+          </div>
+        </div>
+
+        {/* ターン順を上部に表示 */}
+        <div className="mb-6 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl shadow-indigo-900/30 p-4">
+          <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold mb-2">Turn Order</p>
+          <div className="flex gap-2 overflow-x-auto">
+            {activePlayers.map((p, idx) => (
+              <div
+                key={p.id}
+                className={`flex items-center gap-2 rounded-2xl px-3 py-2 border ${
+                  idx === currentTurn
+                    ? 'border-emerald-300/60 bg-emerald-500/20 text-emerald-100'
+                    : 'border-white/10 bg-white/5 text-white'
+                }`}
+              >
+                <span className="w-6 h-6 rounded-full bg-white/10 border border-white/20 text-xs font-bold flex items-center justify-center">
+                  {idx + 1}
+                </span>
+                <span className="text-sm font-semibold">{p.name}</span>
+                {idx === currentTurn && (
+                  <span className="text-[11px] font-bold text-emerald-100">現在</span>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -357,32 +387,6 @@ const GamePage = () => {
               <div>
                 <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold">History</p>
                 <h2 className="text-xl font-bold text-white">回答履歴 ({history.length}件)</h2>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-              <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold mb-2">Turn Order</p>
-              <div className="flex flex-col gap-2">
-                {activePlayers.map((p, idx) => (
-                  <div
-                    key={p.id}
-                    className={`flex items-center justify-between rounded-xl px-3 py-2 ${
-                      idx === currentTurn
-                        ? 'bg-emerald-500/20 border border-emerald-300/40 text-emerald-100'
-                        : 'bg-white/5 border border-white/10 text-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-white/10 border border-white/20 text-xs font-bold flex items-center justify-center">
-                        {idx + 1}
-                      </span>
-                      <span className="text-sm font-semibold">{p.name}</span>
-                    </div>
-                    {idx === currentTurn && (
-                      <span className="text-[11px] font-bold text-emerald-100">現在の番</span>
-                    )}
-                  </div>
-                ))}
               </div>
             </div>
 
