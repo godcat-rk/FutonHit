@@ -278,7 +278,19 @@ const LobbyPage = () => {
     if (!isHost) return
     startGame()
     const currentState = useGameStore.getState()
-    const playerOrder = currentState.players.map((p) => p.id)
+    const playerOrder = [...currentState.players.map((p) => p.id)]
+    // ランダムな順番にシャッフル
+    for (let i = playerOrder.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[playerOrder[i], playerOrder[j]] = [playerOrder[j], playerOrder[i]]
+    }
+    // ホスト側も同じ順番でローカル反映
+    const orderedPlayers = playerOrder
+      .map((id: string) => currentState.players.find((p) => p.id === id))
+      .filter(Boolean)
+    if (orderedPlayers.length > 0) {
+      useGameStore.setState({ players: orderedPlayers as typeof players })
+    }
     publish('game:start', { answer: currentState.answer, playerOrder })
   }
 
