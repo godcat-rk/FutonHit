@@ -85,6 +85,13 @@ const LobbyPage = () => {
 
     const handleRoomCreated = (message: any) => {
       const { hostId, playerOrder } = message.data
+      const state = useGameStore.getState()
+
+      // すでに他のホストが存在する場合は無視（1部屋のみ）
+      if (state.roomHost && state.roomHost !== hostId) {
+        return
+      }
+
       setGameStatus('preparing')
       setRoomHost(hostId)
 
@@ -202,15 +209,17 @@ const LobbyPage = () => {
   }, [gameStatus, navigate])
 
   const handleCreateRoom = () => {
-    if (currentPlayerId) {
-      createRoom(currentPlayerId)
-      const currentState = useGameStore.getState()
-      const playerOrder = currentState.players.map((p) => p.id)
-      publish('room:created', { hostId: currentPlayerId, playerOrder })
-    }
+    // すでに部屋がある場合は新規作成しない
+    if (!currentPlayerId || roomHost) return
+
+    createRoom(currentPlayerId)
+    const currentState = useGameStore.getState()
+    const playerOrder = currentState.players.map((p) => p.id)
+    publish('room:created', { hostId: currentPlayerId, playerOrder })
   }
 
   const handleStartGame = () => {
+    if (!isHost) return
     startGame()
     const currentState = useGameStore.getState()
     const playerOrder = currentState.players.map((p) => p.id)
