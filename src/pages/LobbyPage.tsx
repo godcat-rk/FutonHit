@@ -216,7 +216,6 @@ const LobbyPage = () => {
       const state = useGameStore.getState()
       if (!state.currentPlayerId) return
       publish('player:leave', { playerId: state.currentPlayerId })
-      removePlayer(state.currentPlayerId)
     }
 
     window.addEventListener('beforeunload', handleBeforeUnload)
@@ -224,6 +223,18 @@ const LobbyPage = () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
     }
   }, [publish])
+
+  const handleLogout = () => {
+    const state = useGameStore.getState()
+    if (state.currentPlayerId) {
+      publish('player:leave', { playerId: state.currentPlayerId })
+      removePlayer(state.currentPlayerId)
+    }
+    localStorage.removeItem('playerId')
+    localStorage.removeItem('playerName')
+    setCurrentPlayerId(null)
+    navigate('/')
+  }
 
   // 定期ハートビート送信
   useEffect(() => {
@@ -320,6 +331,12 @@ const LobbyPage = () => {
               <p className="text-xs text-slate-200/80">あなた</p>
               <p className="text-lg font-semibold text-white">{currentPlayer.name}</p>
               {isHost && <span className="text-[11px] font-semibold text-cyan-200">ホスト権限</span>}
+              <button
+                onClick={handleLogout}
+                className="mt-3 text-xs rounded-full border border-white/20 bg-white/10 px-3 py-1 text-white hover:bg-white/20 transition"
+              >
+                ログアウト
+              </button>
             </div>
           )}
         </div>
