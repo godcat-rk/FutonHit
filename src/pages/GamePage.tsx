@@ -26,8 +26,8 @@ const GamePage = () => {
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([])
   const [timeLeft, setTimeLeft] = useState(60)
 
-  const currentPlayer = players.find(p => p.id === currentPlayerId)
-  const activePlayers = players.filter(p => !p.isSpectator && !p.isCorrect)
+  const currentPlayer = players.find((p) => p.id === currentPlayerId)
+  const activePlayers = players.filter((p) => !p.isSpectator && !p.isCorrect)
   const turnPlayer = activePlayers[currentTurn]
   const isMyTurn = turnPlayer?.id === currentPlayerId
   const isSpectator = currentPlayer?.isSpectator || false
@@ -45,25 +45,19 @@ const GamePage = () => {
   }, [gameStatus, navigate])
 
   useEffect(() => {
-    // 回答リクエストのリスニング（ホストのみ処理）
+    // ホストが回答を受理し、全員に通知する
     const handleAnswerRequest = (message: any) => {
       const { guess, playerId: requestPlayerId } = message.data
       const currentState = useGameStore.getState()
 
-      // ホストのみが回答を受理
+      // ホストのみが回答を処理
       if (currentState.currentPlayerId !== currentState.roomHost) return
 
-      const activePlayers = currentState.players.filter(p => !p.isSpectator && !p.isCorrect)
-      const currentTurnPlayer = activePlayers[currentState.currentTurn]
-
-      // リクエスト者が現在のターンプレイヤーかチェック
-      if (!currentTurnPlayer || currentTurnPlayer.id !== requestPlayerId) {
-        console.warn('Invalid turn player submitted answer')
-        return
-      }
+      const active = currentState.players.filter((p) => !p.isSpectator && !p.isCorrect)
+      const currentTurnPlayer = active[currentState.currentTurn]
+      if (!currentTurnPlayer || currentTurnPlayer.id !== requestPlayerId) return
 
       const { hit, blow } = calculateHitAndBlow(currentState.answer, guess)
-
       const newHistory = {
         playerId: currentTurnPlayer.id,
         playerName: currentTurnPlayer.name,
@@ -73,20 +67,11 @@ const GamePage = () => {
         timestamp: Date.now(),
       }
 
-      const nextTurn = (currentState.currentTurn + 1) % activePlayers.length
-      let winner: string | null = null
-      if (hit === 4) {
-        winner = currentTurnPlayer.name
-      }
+      const nextTurn = (currentState.currentTurn + 1) % active.length
+      const winner = hit === 4 ? currentTurnPlayer.name : null
 
-      // ホストが全員に回答結果を配信
-      publish('answer:accepted', {
-        history: newHistory,
-        nextTurn,
-        winner,
-      })
+      publish('answer:accepted', { history: newHistory, nextTurn, winner })
 
-      // ホスト自身の状態も更新
       addHistory(newHistory)
       if (winner) {
         setWinner(winner)
@@ -97,16 +82,13 @@ const GamePage = () => {
       }
     }
 
-    // 回答承認のリスニング（全員が処理）
+    // ホストからの承認を受信し、全員が状態を揃える
     const handleAnswerAccepted = (message: any) => {
       const { history: newHistory, nextTurn, winner } = message.data
       const currentState = useGameStore.getState()
-
-      // ホスト自身は既に更新済みなのでスキップ
       if (currentState.currentPlayerId === currentState.roomHost) return
 
       addHistory(newHistory)
-
       if (winner) {
         setWinner(winner)
         setGameStatus('finished')
@@ -123,7 +105,7 @@ const GamePage = () => {
       unsubscribe('answer:request', handleAnswerRequest)
       unsubscribe('answer:accepted', handleAnswerAccepted)
     }
-  }, [])
+  }, [addHistory, publish, setCurrentTurn, setGameStatus, setWinner, subscribe, unsubscribe])
 
   useEffect(() => {
     if (!isMyTurn) {
@@ -160,10 +142,8 @@ const GamePage = () => {
 
   const submitAnswer = (guess: number[]) => {
     if (!turnPlayer || !currentPlayerId) return
-    // 自分のターンでない場合は回答できない
     if (!isMyTurn) return
 
-    // ホストに回答リクエストを送信
     publish('answer:request', {
       guess,
       playerId: currentPlayerId,
@@ -181,80 +161,78 @@ const GamePage = () => {
   const latestHistory = history[history.length - 1]
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-7xl mx-auto">
-        {/* ヘッダー */}
-        <div className="bg-white rounded-lg shadow-lg p-4 mb-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">FutonHit</h1>
-            <div className="text-right">
-              <p className="text-sm text-gray-600">あなた</p>
-              <p className="font-semibold">{currentPlayer?.name}</p>
-            </div>
+    <div className="relative min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-gradient-to-br from-indigo-500/35 to-cyan-400/25 blur-3xl" />
+        <div className="absolute right-[-8%] bottom-10 h-96 w-96 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-indigo-500/25 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 lg:py-10 text-white">
+        <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-300 font-semibold">Gameplay</p>
+            <h1 className="text-3xl font-bold mt-1">FutonHit — Online Duel</h1>
+            <p className="text-sm text-slate-200/80">推理・速度・ターン管理が鍵。ホストが判定し、全員へ同期されます。</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-lg px-4 py-3">
+            <p className="text-xs text-slate-200/80">あなた</p>
+            <p className="text-lg font-semibold text-white">{currentPlayer?.name}</p>
+            <p className="text-[11px] text-cyan-200 font-semibold">
+              {isSpectator ? '観戦中' : isMyTurn ? 'あなたのターン' : '待機中'}
+            </p>
           </div>
         </div>
 
-        {/* メインコンテンツ: 2カラムレイアウト */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* 左カラム: 回答エリア */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* ターン情報 */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6">
+          <div className="space-y-5">
+            <div className="rounded-3xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl shadow-indigo-900/30 p-6">
               {isSpectator ? (
-                <div className="p-4 bg-gray-100 rounded-lg border-2 border-gray-300 text-center">
-                  <p className="font-semibold text-gray-700">観戦モード</p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    ゲーム終了後に参加できます
-                  </p>
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-5 text-center">
+                  <p className="text-lg font-semibold">観戦モード</p>
+                  <p className="text-sm text-slate-200/80 mt-1">次のラウンドまでリザーブ。最新の動きを見守ろう。</p>
                 </div>
               ) : isMyTurn ? (
-                <div className="flex justify-between items-center p-4 bg-yellow-50 rounded-lg border-2 border-yellow-300">
+                <div className="flex items-center justify-between rounded-2xl border border-amber-300/60 bg-amber-100/10 px-4 py-4">
                   <span className="text-xl font-bold">あなたのターン</span>
-                  <div className="text-4xl font-bold text-red-600">
-                    残り {timeLeft}秒
-                  </div>
+                  <span className="text-4xl font-black text-amber-200 drop-shadow-lg">残り {timeLeft}秒</span>
                 </div>
               ) : (
-                <div className="p-4 bg-blue-50 rounded-lg border-2 border-blue-300 text-center">
-                  <p className="text-xl font-semibold">
-                    {turnPlayer?.name} のターン
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    残り {timeLeft}秒
-                  </p>
+                <div className="flex items-center justify-between rounded-2xl border border-cyan-300/60 bg-cyan-100/10 px-4 py-4">
+                  <span className="text-xl font-semibold">{turnPlayer?.name} のターン</span>
+                  <span className="text-2xl font-bold text-cyan-100">残り {timeLeft}秒</span>
                 </div>
               )}
             </div>
 
-            {/* 最新の結果表示 */}
             {latestHistory && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-lg font-semibold mb-3">最新の結果</h2>
-                <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border-2 border-blue-200">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-lg font-bold">{latestHistory.playerName}</span>
-                    <div className="flex gap-6">
-                      <div className="text-center">
-                        <p className="text-xs text-gray-600">ヒット</p>
-                        <p className="text-3xl font-bold text-green-600">{latestHistory.hit}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-gray-600">ブロー</p>
-                        <p className="text-3xl font-bold text-blue-600">{latestHistory.blow}</p>
-                      </div>
+              <div className="rounded-3xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl shadow-indigo-900/30 p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold">Latest</p>
+                    <h2 className="text-xl font-bold text-white">最新の結果</h2>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="text-center">
+                      <p className="text-xs text-slate-200/80">Hit</p>
+                      <p className="text-3xl font-black text-emerald-200">{latestHistory.hit}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-slate-200/80">Blow</p>
+                      <p className="text-3xl font-black text-cyan-200">{latestHistory.blow}</p>
                     </div>
                   </div>
-                  <div className="flex gap-2 justify-center">
+                </div>
+                <div className="flex gap-3 items-center">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white">
+                    {latestHistory.playerName}
+                  </div>
+                  <div className="flex gap-2">
                     {latestHistory.guess.map((num, i) => (
                       <div
                         key={i}
-                        className="w-16 h-16 bg-white border-2 border-gray-300 rounded-lg flex items-center justify-center p-1"
+                        className="w-16 h-16 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center p-2"
                       >
-                        <img
-                          src={getIconPath(num)}
-                          alt={`Icon ${num}`}
-                          className="w-full h-full object-contain"
-                        />
+                        <img src={getIconPath(num)} alt={`Icon ${num}`} className="h-full w-full object-contain" />
                       </div>
                     ))}
                   </div>
@@ -262,49 +240,49 @@ const GamePage = () => {
               </div>
             )}
 
-            {/* 回答入力エリア */}
             {!isSpectator && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-lg font-semibold mb-4">
-                  アイコンを選択 ({selectedNumbers.length}/4)
-                </h2>
-                <div className="grid grid-cols-3 gap-3 mb-6 max-w-md mx-auto">
+              <div className="rounded-3xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl shadow-indigo-900/30 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold">Select</p>
+                    <h2 className="text-xl font-bold text-white">アイコンを選択 ({selectedNumbers.length}/4)</h2>
+                  </div>
+                  <span className="text-sm text-slate-200/80">順不同でOK</span>
+                </div>
+
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-6">
                   {Array.from({ length: TOTAL_ICONS }, (_, i) => i + 1).map((num) => (
                     <button
                       key={num}
                       onClick={() => toggleNumber(num)}
                       disabled={!isMyTurn}
-                      className={`aspect-square rounded-lg transition-all p-3 ${
+                      className={`relative aspect-square rounded-2xl border transition-all p-3 ${
                         selectedNumbers.includes(num)
-                          ? 'bg-blue-100 border-4 border-blue-600 scale-105 shadow-lg'
-                          : 'bg-gray-100 border-2 border-gray-300 hover:bg-gray-200'
+                          ? 'border-cyan-200 bg-white/80 text-slate-900 shadow-lg shadow-cyan-500/30 scale-[1.02]'
+                          : 'border-white/10 bg-white/5 hover:border-cyan-200/60'
                       } ${!isMyTurn ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      <img
-                        src={getIconPath(num)}
-                        alt={`Icon ${num}`}
-                        className="w-full h-full object-contain"
-                      />
+                      <img src={getIconPath(num)} alt={`Icon ${num}`} className="w-full h-full object-contain" />
                     </button>
                   ))}
                 </div>
 
                 <div className="mb-6">
-                  <h3 className="text-sm font-semibold mb-3">選択中</h3>
-                  <div className="flex gap-3 justify-center">
+                  <h3 className="text-sm font-semibold text-white/90 mb-3">選択中</h3>
+                  <div className="grid grid-cols-4 gap-3">
                     {[0, 1, 2, 3].map((i) => (
                       <div
                         key={i}
-                        className="w-20 h-20 border-2 border-gray-300 rounded-lg flex items-center justify-center bg-white p-2"
+                        className="h-20 rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center p-2"
                       >
                         {selectedNumbers[i] ? (
                           <img
                             src={getIconPath(selectedNumbers[i])}
                             alt={`Selected ${selectedNumbers[i]}`}
-                            className="w-full h-full object-contain"
+                            className="h-full w-full object-contain"
                           />
                         ) : (
-                          <span className="text-3xl text-gray-400">?</span>
+                          <span className="text-3xl text-slate-400">?</span>
                         )}
                       </div>
                     ))}
@@ -314,7 +292,7 @@ const GamePage = () => {
                 <button
                   onClick={handleSubmit}
                   disabled={selectedNumbers.length !== 4 || !isMyTurn}
-                  className="w-full bg-green-600 text-white py-4 rounded-lg text-lg font-bold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-600 px-6 py-4 text-lg font-bold text-white shadow-xl shadow-cyan-900/30 transition hover:shadow-cyan-500/40 disabled:from-slate-400 disabled:via-slate-400 disabled:to-slate-400 disabled:text-slate-200 disabled:shadow-none"
                 >
                   回答する
                 </button>
@@ -322,52 +300,42 @@ const GamePage = () => {
             )}
           </div>
 
-          {/* 右カラム: 回答履歴 */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6 sticky top-4">
-              <h2 className="text-lg font-semibold mb-4">
-                回答履歴 ({history.length}件)
-              </h2>
-              <div className="space-y-3 max-h-[calc(100vh-12rem)] overflow-y-auto">
-                {history.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
-                    まだ回答がありません
-                  </p>
-                ) : (
-                  [...history].reverse().map((h, index) => (
-                    <div
-                      key={history.length - index - 1}
-                      className="p-3 bg-gray-50 rounded-lg border border-gray-200"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="font-semibold text-sm">{h.playerName}</span>
-                        <div className="flex gap-3">
-                          <span className="text-xs">
-                            <span className="font-bold text-green-600">H:</span> {h.hit}
-                          </span>
-                          <span className="text-xs">
-                            <span className="font-bold text-blue-600">B:</span> {h.blow}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex gap-1">
-                        {h.guess.map((num, i) => (
-                          <div
-                            key={i}
-                            className="flex-1 aspect-square bg-white border border-gray-300 rounded flex items-center justify-center p-1"
-                          >
-                            <img
-                              src={getIconPath(num)}
-                              alt={`Icon ${num}`}
-                              className="w-full h-full object-contain"
-                            />
-                          </div>
-                        ))}
+          <div className="rounded-3xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl shadow-indigo-900/30 p-6 lg:p-7">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold">History</p>
+                <h2 className="text-xl font-bold text-white">回答履歴 ({history.length}件)</h2>
+              </div>
+            </div>
+            <div className="space-y-3 max-h-[calc(100vh-12rem)] overflow-y-auto pr-1">
+              {history.length === 0 ? (
+                <p className="text-slate-200/70 text-center py-8">まだ回答がありません</p>
+              ) : (
+                [...history].reverse().map((h, index) => (
+                  <div
+                    key={history.length - index - 1}
+                    className="rounded-2xl border border-white/10 bg-white/5 p-3"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <span className="font-semibold text-sm text-white">{h.playerName}</span>
+                      <div className="flex gap-3 text-xs">
+                        <span className="text-emerald-200 font-bold">H: {h.hit}</span>
+                        <span className="text-cyan-200 font-bold">B: {h.blow}</span>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                    <div className="flex gap-2">
+                      {h.guess.map((num, i) => (
+                        <div
+                          key={i}
+                          className="flex-1 aspect-square rounded-xl border border-white/10 bg-white/5 flex items-center justify-center p-1"
+                        >
+                          <img src={getIconPath(num)} alt={`Icon ${num}`} className="h-full w-full object-contain" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

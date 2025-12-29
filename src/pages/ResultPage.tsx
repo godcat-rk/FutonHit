@@ -5,66 +5,70 @@ import { getIconPath } from '../utils/iconMapping'
 
 const ResultPage = () => {
   const navigate = useNavigate()
-  const { winner, answer, setGameStatus } = useGameStore()
+  const { winner, answer, resetGame } = useGameStore()
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setGameStatus('lobby')
+      resetGame()
       navigate('/lobby')
     }, 10000)
-
     return () => clearTimeout(timer)
-  }, [setGameStatus, navigate])
+  }, [resetGame, navigate])
 
   const handleReturnToLobby = () => {
-    setGameStatus('lobby')
+    resetGame()
     navigate('/lobby')
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
-        <h1 className="text-4xl font-bold text-center mb-4 text-yellow-600">
-          🏆 ゲーム終了！
-        </h1>
+    <div className="relative min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-gradient-to-br from-amber-400/40 to-pink-500/30 blur-3xl" />
+        <div className="absolute right-[-10%] bottom-10 h-96 w-96 rounded-full bg-gradient-to-br from-indigo-500/30 to-cyan-400/25 blur-3xl" />
+      </div>
 
-        <div className="mb-6 p-4 bg-yellow-50 rounded-lg border-2 border-yellow-300">
-          <p className="text-center text-gray-700 mb-2">勝者</p>
-          <p className="text-2xl font-bold text-center text-blue-600">
-            {winner || '---'}
-          </p>
-        </div>
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-10">
+        <div className="w-full max-w-3xl rounded-3xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl shadow-indigo-900/30 p-8 lg:p-10 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-amber-200 font-semibold">Game Over</p>
+              <h1 className="mt-2 text-3xl lg:text-4xl font-bold">ラウンド終了</h1>
+            </div>
+            <div className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white border border-white/10">
+              次のラウンドに自動で戻ります
+            </div>
+          </div>
 
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-          <p className="text-center text-gray-700 mb-2">正解</p>
-          <div className="flex justify-center gap-3">
-            {answer.map((num, i) => (
-              <div
-                key={i}
-                className="w-16 h-16 bg-white rounded-lg flex items-center justify-center border-2 border-blue-400 p-2"
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+              <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold">Winner</p>
+              <h2 className="text-3xl font-black text-white mt-2">{winner || '---'}</h2>
+              <p className="text-sm text-slate-200/80 mt-1">最も早く正解に辿り着いたプレイヤー</p>
+              <button
+                onClick={handleReturnToLobby}
+                className="mt-6 w-full rounded-2xl bg-gradient-to-r from-amber-400 via-pink-500 to-indigo-500 px-6 py-3 text-base font-bold text-white shadow-xl shadow-amber-900/30 transition hover:shadow-amber-500/40"
               >
-                <img
-                  src={getIconPath(num)}
-                  alt={`Answer ${num}`}
-                  className="w-full h-full object-contain"
-                />
+                ロビーに戻る
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+              <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold">Answer</p>
+              <h3 className="text-lg font-semibold text-white mt-2">正解アイコン</h3>
+              <div className="mt-4 grid grid-cols-4 gap-3">
+                {answer.map((num, i) => (
+                  <div
+                    key={i}
+                    className="aspect-square rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center p-3"
+                  >
+                    <img src={getIconPath(num)} alt={`Answer ${num}`} className="w-full h-full object-contain" />
+                  </div>
+                ))}
               </div>
-            ))}
+              <p className="mt-4 text-xs text-slate-200/80">10秒後にロビーへ戻ります。</p>
+            </div>
           </div>
         </div>
-
-        <div className="mb-6 p-3 bg-gray-100 rounded-lg text-center">
-          <p className="text-sm text-gray-600">
-            10秒後に自動的にロビーに戻ります
-          </p>
-        </div>
-
-        <button
-          onClick={handleReturnToLobby}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-        >
-          ロビーに戻る
-        </button>
       </div>
     </div>
   )
