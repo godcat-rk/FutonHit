@@ -24,12 +24,33 @@
 - **Realtime**: Ably
 - **Hosting**: GitHub Pages
 
+## セットアップ
+
+```bash
+# 依存パッケージのインストール
+npm install
+
+# 開発サーバーの起動
+npm run dev
+
+# ビルド
+npm run build
+
+# プレビュー
+npm run preview
+```
+
 ## 開発状況
 
-現在、要件定義フェーズ完了。次のステップ:
-1. 環境構築
-2. アプリケーション実装
-3. デプロイ
+- ✅ 要件定義完了
+- ✅ 環境構築完了
+- 🚧 アプリケーション実装中
+- ⏳ デプロイ準備中
+
+## デプロイ
+
+GitHub Actionsで自動デプロイされます。
+`main`ブランチにpushすると、GitHub Pagesに自動的にデプロイされます。
 
 ## ドキュメント
 
