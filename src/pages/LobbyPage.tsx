@@ -288,11 +288,11 @@ const LobbyPage = () => {
               <ul className="mt-4 space-y-3 text-sm text-slate-100/90">
                 <li className="flex items-start gap-3">
                   <span className="mt-1 h-2 w-2 rounded-full bg-cyan-300" />
-                  <span>1-13の数字から4つを推理して当てる</span>
+                  <span>用意されたアイコンから4つを推理して当てる</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="mt-1 h-2 w-2 rounded-full bg-cyan-300" />
-                  <span>60秒以内に回答。Hitは数字+位置一致、Blowは数字のみ一致</span>
+                  <span>60秒以内に回答。Hitはアイコン+位置一致、Blowはアイコンのみ一致</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="mt-1 h-2 w-2 rounded-full bg-cyan-300" />
