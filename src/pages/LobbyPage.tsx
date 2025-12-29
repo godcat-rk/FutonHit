@@ -135,6 +135,16 @@ const LobbyPage = () => {
       removePlayer(playerId)
     }
 
+    const handlePlayerKick = (message: any) => {
+      const { playerId } = message.data
+      const state = useGameStore.getState()
+      removePlayer(playerId)
+      if (playerId === state.currentPlayerId) {
+        setGameStatus('lobby')
+        navigate('/')
+      }
+    }
+
     const handlePresencePing = (message: any) => {
       const { playerId, ts } = message.data
       lastSeenRef.current[playerId] = ts || Date.now()
@@ -146,6 +156,7 @@ const LobbyPage = () => {
     subscribe('room:created', handleRoomCreated)
     subscribe('game:start', handleGameStart)
     subscribe('player:leave', handlePlayerLeave)
+    subscribe('player:kick', handlePlayerKick)
     subscribe('presence:ping', handlePresencePing)
 
     return () => {
@@ -155,9 +166,10 @@ const LobbyPage = () => {
       unsubscribe('room:created', handleRoomCreated)
       unsubscribe('game:start', handleGameStart)
       unsubscribe('player:leave', handlePlayerLeave)
+      unsubscribe('player:kick', handlePlayerKick)
       unsubscribe('presence:ping', handlePresencePing)
     }
-  }, [addPlayer, publish, removePlayer, setAnswer, setCurrentTurn, setGameStatus, setHistory, setRoomHost, setPlayers, subscribe, unsubscribe])
+  }, [addPlayer, publish, removePlayer, setAnswer, setCurrentTurn, setGameStatus, setHistory, setRoomHost, setPlayers, subscribe, unsubscribe, navigate])
 
   useEffect(() => {
     // 購読が確立した後にプレイヤーを初期化
@@ -270,6 +282,12 @@ const LobbyPage = () => {
     publish('game:start', { answer: currentState.answer, playerOrder })
   }
 
+  const handleKick = (playerId: string) => {
+    if (!isHost || playerId === currentPlayerId) return
+    publish('player:kick', { playerId })
+    removePlayer(playerId)
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       <div className="pointer-events-none absolute inset-0">
@@ -325,6 +343,14 @@ const LobbyPage = () => {
                     <span className="rounded-full bg-amber-400/20 text-amber-200 border border-amber-200/50 px-3 py-1 text-xs font-semibold">
                       ホスト
                     </span>
+                  )}
+                  {isHost && player.id !== roomHost && (
+                    <button
+                      onClick={() => handleKick(player.id)}
+                      className="text-xs px-3 py-1 rounded-full border border-red-200/60 text-red-100 bg-red-500/20 hover:bg-red-500/40 transition"
+                    >
+                      退出
+                    </button>
                   )}
                 </div>
               ))}

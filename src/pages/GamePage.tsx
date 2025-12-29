@@ -17,6 +17,8 @@ const GamePage = () => {
     history,
     currentPlayerId,
     gameStatus,
+    roomHost,
+    removePlayer,
     addHistory,
     setCurrentTurn,
     setWinner,
@@ -31,6 +33,7 @@ const GamePage = () => {
   const turnPlayer = activePlayers[currentTurn]
   const isMyTurn = turnPlayer?.id === currentPlayerId
   const isSpectator = currentPlayer?.isSpectator || false
+  const isHost = currentPlayerId === roomHost
 
   useEffect(() => {
     if (gameStatus !== 'playing') {
@@ -98,14 +101,41 @@ const GamePage = () => {
       }
     }
 
+    const handlePlayerKick = (message: any) => {
+      const { playerId } = message.data
+      const state = useGameStore.getState()
+      removePlayer(playerId)
+      const updatedActive = state.players.filter((p) => !p.isSpectator && !p.isCorrect && p.id !== playerId)
+      if (updatedActive.length > 0) {
+        const safeTurn = state.currentTurn % updatedActive.length
+        setCurrentTurn(safeTurn)
+      }
+      if (playerId === state.currentPlayerId) {
+        setGameStatus('lobby')
+        navigate('/lobby')
+      }
+    }
+
+    const handleSkipTurnEvent = (message: any) => {
+      const { nextTurn } = message.data
+      const state = useGameStore.getState()
+      if (state.currentPlayerId === state.roomHost) return
+      setCurrentTurn(nextTurn)
+      setTimeLeft(60)
+    }
+
     subscribe('answer:request', handleAnswerRequest)
     subscribe('answer:accepted', handleAnswerAccepted)
+    subscribe('player:kick', handlePlayerKick)
+    subscribe('host:skip-turn', handleSkipTurnEvent)
 
     return () => {
       unsubscribe('answer:request', handleAnswerRequest)
       unsubscribe('answer:accepted', handleAnswerAccepted)
+      unsubscribe('player:kick', handlePlayerKick)
+      unsubscribe('host:skip-turn', handleSkipTurnEvent)
     }
-  }, [addHistory, publish, setCurrentTurn, setGameStatus, setWinner, subscribe, unsubscribe])
+  }, [addHistory, publish, removePlayer, setCurrentTurn, setGameStatus, setWinner, subscribe, unsubscribe, navigate])
 
   useEffect(() => {
     if (!isMyTurn) {
@@ -158,6 +188,16 @@ const GamePage = () => {
     }
   }
 
+  const handleSkipTurn = () => {
+    if (!isHost) return
+    const active = useGameStore.getState().players.filter((p) => !p.isSpectator && !p.isCorrect)
+    if (active.length === 0) return
+    const nextTurn = (currentTurn + 1) % active.length
+    publish('host:skip-turn', { nextTurn })
+    setCurrentTurn(nextTurn)
+    setTimeLeft(60)
+  }
+
   const latestHistory = history[history.length - 1]
 
   return (
@@ -200,6 +240,16 @@ const GamePage = () => {
                 <div className="flex items-center justify-between rounded-2xl border border-cyan-300/60 bg-cyan-100/10 px-4 py-4">
                   <span className="text-xl font-semibold">{turnPlayer?.name} のターン</span>
                   <span className="text-2xl font-bold text-cyan-100">残り {timeLeft}秒</span>
+                </div>
+              )}
+              {isHost && (
+                <div className="mt-3 flex justify-end">
+                  <button
+                    onClick={handleSkipTurn}
+                    className="text-xs rounded-full px-3 py-1 border border-white/20 bg-white/10 text-white hover:bg-white/20 transition"
+                  >
+                    ターンをスキップ（ホスト）
+                  </button>
                 </div>
               )}
             </div>
