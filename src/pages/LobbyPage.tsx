@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/useGameStore'
 
@@ -6,6 +6,7 @@ const LobbyPage = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { name } = location.state || {}
+  const initialized = useRef(false)
 
   const {
     players,
@@ -27,6 +28,9 @@ const LobbyPage = () => {
       return
     }
 
+    if (initialized.current) return
+    initialized.current = true
+
     const playerId = `player-${Date.now()}-${Math.random()}`
     setCurrentPlayerId(playerId)
 
@@ -40,7 +44,7 @@ const LobbyPage = () => {
     }
 
     addPlayer(newPlayer)
-  }, [name, navigate, addPlayer, setCurrentPlayerId])
+  }, [])
 
   useEffect(() => {
     if (gameStatus === 'playing') {

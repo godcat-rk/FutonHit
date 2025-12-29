@@ -22,7 +22,8 @@ const GamePage = () => {
   const [timeLeft, setTimeLeft] = useState(20)
 
   const currentPlayer = players.find(p => p.id === currentPlayerId)
-  const turnPlayer = players[currentTurn]
+  const activePlayers = players.filter(p => !p.isSpectator && !p.isCorrect)
+  const turnPlayer = activePlayers[currentTurn]
   const isMyTurn = turnPlayer?.id === currentPlayerId
   const isSpectator = currentPlayer?.isSpectator || false
 
