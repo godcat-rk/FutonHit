@@ -337,7 +337,7 @@ const LobbyPage = () => {
                 <h2 className="text-2xl font-bold text-white">参加者一覧</h2>
               </div>
               <div className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-semibold text-white border border-white/10">
-                {players.length} / 4
+                {players.length} 人
               </div>
             </div>
 
