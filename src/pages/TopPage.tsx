@@ -37,31 +37,27 @@ const TopPage = () => {
         <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl shadow-indigo-900/30 p-8 lg:p-10 text-white">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-cyan-200 border border-white/10">
-              FutonHit / Online Battle
+              布団鯖ヒット＆ブロー
             </div>
             <h1 className="mt-4 text-4xl lg:text-5xl font-bold leading-tight text-white">
-              直感と推理で勝つ
-              <span className="block text-cyan-300">ハイスピード・ヒットアンドブロー</span>
+              布団鯖ヒット＆ブロー
+              <span className="block text-cyan-300">直感と推理で駆けるリアルタイム対戦</span>
             </h1>
             <p className="mt-4 text-base text-slate-200/90">
-              最大4人のプレイヤーが同時に競い合う推理ゲーム。リアルタイムにロビーへ入り、ターンを奪い合う緊張感を楽しもう。
+              鯖民専用のオンライン推理ゲーム。リアルタイムのロビーで合流し、ターンを巡る読み合いの緊張感を楽しもう。
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3 text-sm text-slate-100/80">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-xs uppercase text-cyan-200 tracking-wide">ルール</p>
-                <p className="mt-1 font-semibold">1-13から4つの数字を当てる</p>
+                <p className="mt-1 font-semibold">6種のアイコンから4つの並びを当てる</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-xs uppercase text-cyan-200 tracking-wide">判定</p>
-                <p className="mt-1 font-semibold">Hit: 数字+位置 / Blow: 数字のみ</p>
+                <p className="mt-1 font-semibold">Hit: アイコン+位置 / Blow: アイコンのみ</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-xs uppercase text-cyan-200 tracking-wide">テンポ</p>
                 <p className="mt-1 font-semibold">回答時間 60秒 / 自動入力フォールバック</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase text-cyan-200 tracking-wide">人数</p>
-                <p className="mt-1 font-semibold">最大4人 / 途中参加は観戦に最適</p>
               </div>
             </div>
           </div>
@@ -72,9 +68,6 @@ const TopPage = () => {
                 <p className="text-xs uppercase tracking-wide text-slate-500 font-semibold">Join Lobby</p>
                 <h2 className="text-2xl font-bold text-slate-900 mt-1">プレイヤー登録</h2>
               </div>
-              <span className="rounded-full bg-slate-900 text-white text-xs px-3 py-1 font-semibold">
-                パス必要
-              </span>
             </div>
 
             <div className="mt-6 space-y-5">
