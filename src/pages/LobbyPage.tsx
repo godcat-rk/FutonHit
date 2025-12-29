@@ -30,6 +30,7 @@ const LobbyPage = () => {
     setAnswer,
     setCurrentTurn,
     setHistory,
+    setPlayers,
   } = useGameStore()
 
   const isHost = currentPlayerId === roomHost
@@ -72,10 +73,11 @@ const LobbyPage = () => {
       if (syncedStatus && syncedStatus !== 'lobby') {
         setGameStatus(syncedStatus)
         if (syncedStatus === 'playing' || syncedStatus === 'preparing') {
-          const me = currentState.players.find((p) => p.id === currentState.currentPlayerId)
-          if (me) {
-            me.isSpectator = true
-          }
+          // 途中参加は観戦モードへ強制
+          const updated = currentState.players.map((p) =>
+            p.id === currentState.currentPlayerId ? { ...p, isSpectator: true } : p
+          )
+          setPlayers(updated)
         }
       }
       if (syncedHost) {
@@ -171,7 +173,8 @@ const LobbyPage = () => {
       answerCount: 0,
       isCorrect: false,
       isHost: false,
-      isSpectator: false,
+      // 進行中のゲームに途中参加した場合は観戦扱い
+      isSpectator: useGameStore.getState().gameStatus !== 'lobby',
     }
 
     const alreadyExists = players.some((p) => p.id === playerId)
