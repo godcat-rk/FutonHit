@@ -1,5 +1,7 @@
 export type GameStatus = 'lobby' | 'preparing' | 'playing' | 'finished'
 
+export type Difficulty = 'easy' | 'normal' | 'hard'
+
 export interface Player {
   id: string
   name: string
@@ -27,4 +29,5 @@ export interface GameState {
   winner: string | null
   roomHost: string | null
   currentPlayerId: string | null
+  difficulty: Difficulty
 }

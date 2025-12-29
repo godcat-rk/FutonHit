@@ -21,6 +21,7 @@ const LobbyPage = () => {
     gameStatus,
     roomHost,
     currentPlayerId,
+    difficulty,
     addPlayer,
     removePlayer,
     startGame,
@@ -31,6 +32,7 @@ const LobbyPage = () => {
     setCurrentTurn,
     setHistory,
     setPlayers,
+    setDifficulty,
   } = useGameStore()
 
   const isHost = currentPlayerId === roomHost
@@ -86,7 +88,7 @@ const LobbyPage = () => {
     }
 
     const handleGameStart = (message: any) => {
-      const { answer, playerOrder, hostId } = message.data
+      const { answer, playerOrder, hostId, difficulty: gameDifficulty } = message.data
 
       if (playerOrder) {
         const currentState = useGameStore.getState()
@@ -104,6 +106,9 @@ const LobbyPage = () => {
       setCurrentTurn(0)
       setHistory([])
       setRoomHost(hostId)
+      if (gameDifficulty) {
+        setDifficulty(gameDifficulty)
+      }
     }
 
     const handlePlayerLeave = (message: any) => {
@@ -275,7 +280,8 @@ const LobbyPage = () => {
     publish('game:start', {
       answer: currentState.answer,
       playerOrder,
-      hostId: currentPlayerId
+      hostId: currentPlayerId,
+      difficulty: currentState.difficulty
     })
   }
 
@@ -364,15 +370,55 @@ const LobbyPage = () => {
               )}
             </div>
 
-            <div className="mt-8 space-y-3">
+            <div className="mt-8 space-y-4">
               {gameStatus === 'lobby' && (
-                <button
-                  onClick={handleStartGame}
-                  disabled={players.length === 0}
-                  className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500 px-6 py-3 text-base font-bold text-white shadow-lg shadow-indigo-900/30 transition hover:shadow-indigo-500/50 disabled:from-slate-400 disabled:via-slate-400 disabled:to-slate-400 disabled:text-slate-200"
-                >
-                  ゲーム開始
-                </button>
+                <>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold mb-2">Difficulty</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => setDifficulty('easy')}
+                        disabled={!isHost}
+                        className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                          difficulty === 'easy'
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                            : 'bg-white/10 text-slate-200 hover:bg-white/20'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        かんたん
+                        <span className="block text-[10px] mt-0.5 opacity-80">6枚</span>
+                      </button>
+                      <button
+                        onClick={() => setDifficulty('normal')}
+                        disabled={!isHost}
+                        className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                          difficulty === 'normal'
+                            ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                            : 'bg-white/10 text-slate-200 hover:bg-white/20'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        ふつう
+                        <span className="block text-[10px] mt-0.5 opacity-80">10枚</span>
+                      </button>
+                      <button
+                        onClick={() => setDifficulty('hard')}
+                        disabled={true}
+                        className="rounded-xl px-4 py-2 text-sm font-semibold bg-white/5 text-slate-400 cursor-not-allowed opacity-50"
+                      >
+                        むずかしい
+                        <span className="block text-[10px] mt-0.5">14枚(未実装)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleStartGame}
+                    disabled={players.length === 0}
+                    className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500 px-6 py-3 text-base font-bold text-white shadow-lg shadow-indigo-900/30 transition hover:shadow-indigo-500/50 disabled:from-slate-400 disabled:via-slate-400 disabled:to-slate-400 disabled:text-slate-200"
+                  >
+                    ゲーム開始
+                  </button>
+                </>
               )}
             </div>
           </div>

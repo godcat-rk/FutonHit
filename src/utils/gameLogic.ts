@@ -1,7 +1,9 @@
-import { TOTAL_ICONS } from './iconMapping'
+import { getIconCountByDifficulty } from './iconMapping'
+import type { Difficulty } from '../types/game'
 
-export const generateAnswer = (): number[] => {
-  const numbers = Array.from({ length: TOTAL_ICONS }, (_, i) => i + 1)
+export const generateAnswer = (difficulty: Difficulty = 'normal'): number[] => {
+  const iconCount = getIconCountByDifficulty(difficulty)
+  const numbers = Array.from({ length: iconCount }, (_, i) => i + 1)
   const answer: number[] = []
 
   for (let i = 0; i < 4; i++) {
@@ -31,6 +33,6 @@ export const calculateHitAndBlow = (
   return { hit, blow }
 }
 
-export const generateRandomGuess = (): number[] => {
-  return generateAnswer()
+export const generateRandomGuess = (difficulty: Difficulty = 'normal'): number[] => {
+  return generateAnswer(difficulty)
 }

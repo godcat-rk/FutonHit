@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { GameState, Player, AnswerHistory } from '../types/game'
+import type { GameState, Player, AnswerHistory, Difficulty } from '../types/game'
 import { generateAnswer } from '../utils/gameLogic'
 
 interface GameStore extends GameState {
@@ -12,6 +12,7 @@ interface GameStore extends GameState {
   setWinner: (winner: string) => void
   setRoomHost: (hostId: string | null) => void
   setCurrentPlayerId: (playerId: string | null) => void
+  setDifficulty: (difficulty: Difficulty) => void
   createRoom: (hostId: string) => void
   startGame: () => void
   resetGame: () => void
@@ -29,6 +30,7 @@ const initialState: GameState = {
   winner: null,
   roomHost: null,
   currentPlayerId: null,
+  difficulty: 'normal',
 }
 
 export const useGameStore = create<GameStore>((set) => ({
@@ -43,6 +45,7 @@ export const useGameStore = create<GameStore>((set) => ({
   setWinner: (winner) => set({ winner }),
   setRoomHost: (hostId) => set({ roomHost: hostId }),
   setCurrentPlayerId: (playerId) => set({ currentPlayerId: playerId }),
+  setDifficulty: (difficulty) => set({ difficulty }),
   setPlayers: (players) => set({ players }),
   setHistory: (history) => set({ history }),
 
@@ -51,12 +54,12 @@ export const useGameStore = create<GameStore>((set) => ({
     roomHost: hostId
   }),
 
-  startGame: () => set({
+  startGame: () => set((state) => ({
     gameStatus: 'playing',
-    answer: generateAnswer(),
+    answer: generateAnswer(state.difficulty),
     currentTurn: 0,
     history: []
-  }),
+  })),
 
   resetGame: () => set({
     ...initialState,

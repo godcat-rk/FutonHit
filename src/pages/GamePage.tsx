@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/useGameStore'
 import { calculateHitAndBlow, generateRandomGuess } from '../utils/gameLogic'
 import { useAbly } from '../hooks/useAbly'
-import { getIconPath, TOTAL_ICONS } from '../utils/iconMapping'
+import { getIconPath, getIconCountByDifficulty } from '../utils/iconMapping'
 
 const GAME_CHANNEL = 'futonhit-game'
 
@@ -18,6 +18,7 @@ const GamePage = () => {
     currentPlayerId,
     gameStatus,
     roomHost,
+    difficulty,
     removePlayer,
     addHistory,
     setCurrentTurn,
@@ -35,6 +36,7 @@ const GamePage = () => {
   const isMyTurn = turnPlayer?.id === currentPlayerId
   const isSpectator = currentPlayer?.isSpectator || false
   const isHost = currentPlayerId === roomHost
+  const iconCount = getIconCountByDifficulty(difficulty)
 
   useEffect(() => {
     if (gameStatus !== 'playing') {
@@ -164,7 +166,7 @@ const GamePage = () => {
   }, [isMyTurn, currentTurn])
 
   const handleAutoSubmit = () => {
-    const randomGuess = generateRandomGuess()
+    const randomGuess = generateRandomGuess(difficulty)
     submitAnswer(randomGuess)
   }
 
@@ -327,7 +329,7 @@ const GamePage = () => {
                 </div>
 
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-6">
-                  {Array.from({ length: TOTAL_ICONS }, (_, i) => i + 1).map((num) => (
+                  {Array.from({ length: iconCount }, (_, i) => i + 1).map((num) => (
                     <button
                       key={num}
                       onClick={() => toggleNumber(num)}

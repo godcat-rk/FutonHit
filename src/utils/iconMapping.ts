@@ -1,4 +1,6 @@
 // アイコンと数字のマッピング
+import type { Difficulty } from '../types/game'
+
 const BASE_PATH = import.meta.env.BASE_URL || '/'
 
 export const ICON_MAPPING = {
@@ -32,3 +34,16 @@ export const getIconLabel = (num: number): string => {
 }
 
 export const TOTAL_ICONS = 10
+
+export const getIconCountByDifficulty = (difficulty: Difficulty): number => {
+  switch (difficulty) {
+    case 'easy':
+      return 6
+    case 'normal':
+      return 10
+    case 'hard':
+      return 14
+    default:
+      return 10
+  }
+}
