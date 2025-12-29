@@ -222,13 +222,6 @@ const GamePage = () => {
               <p className="text-sm text-slate-200/80">推理・速度・ターン管理が鍵。ホストが判定し、全員へ同期されます。</p>
               <p className="mt-1 text-xs text-slate-200/70">プレイ中 {activeCount} 人</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-right">
-              <p className="text-xs text-slate-200/80">あなた</p>
-              <p className="text-lg font-semibold text-white">{currentPlayer?.name}</p>
-              <p className="text-[11px] text-cyan-200 font-semibold">
-                {isSpectator ? '観戦中' : isMyTurn ? 'あなたのターン' : '待機中'}
-              </p>
-            </div>
           </div>
           <div className="flex gap-2 overflow-x-auto">
             {activePlayers.map((p, idx) => (
