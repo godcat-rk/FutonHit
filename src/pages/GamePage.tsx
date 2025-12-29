@@ -214,25 +214,22 @@ const GamePage = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 lg:py-10 text-white">
-        <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-300 font-semibold">Gameplay</p>
-            <h1 className="text-3xl font-bold mt-1">FutonHit — Online Duel</h1>
-            <p className="text-sm text-slate-200/80">推理・速度・ターン管理が鍵。ホストが判定し、全員へ同期されます。</p>
+        <div className="mb-6 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl shadow-indigo-900/30 p-5 flex flex-col gap-3">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-300 font-semibold">Gameplay</p>
+              <h1 className="text-3xl font-bold mt-1">FutonHit — Online Duel</h1>
+              <p className="text-sm text-slate-200/80">推理・速度・ターン管理が鍵。ホストが判定し、全員へ同期されます。</p>
+              <p className="mt-1 text-xs text-slate-200/70">プレイ中 {activeCount} 人</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-right">
+              <p className="text-xs text-slate-200/80">あなた</p>
+              <p className="text-lg font-semibold text-white">{currentPlayer?.name}</p>
+              <p className="text-[11px] text-cyan-200 font-semibold">
+                {isSpectator ? '観戦中' : isMyTurn ? 'あなたのターン' : '待機中'}
+              </p>
+            </div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-lg px-4 py-3">
-            <p className="text-xs text-slate-200/80">あなた</p>
-            <p className="text-lg font-semibold text-white">{currentPlayer?.name}</p>
-            <p className="text-[11px] text-cyan-200 font-semibold">
-              {isSpectator ? '観戦中' : isMyTurn ? 'あなたのターン' : '待機中'}
-            </p>
-            <p className="mt-1 text-xs text-slate-200/70">プレイ中 {activeCount} 人</p>
-          </div>
-        </div>
-
-        {/* ターン順を上部に表示 */}
-        <div className="mb-6 rounded-3xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl shadow-indigo-900/30 p-4">
-          <p className="text-xs uppercase tracking-wide text-cyan-200 font-semibold mb-2">Turn Order</p>
           <div className="flex gap-2 overflow-x-auto">
             {activePlayers.map((p, idx) => (
               <div
@@ -247,9 +244,7 @@ const GamePage = () => {
                   {idx + 1}
                 </span>
                 <span className="text-sm font-semibold">{p.name}</span>
-                {idx === currentTurn && (
-                  <span className="text-[11px] font-bold text-emerald-100">現在</span>
-                )}
+                {idx === currentTurn && <span className="text-[11px] font-bold text-emerald-100">ターン中</span>}
               </div>
             ))}
           </div>
