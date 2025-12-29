@@ -1,57 +1,32 @@
-# FutonHit - ヒットアンドブローオンライン対戦
+# 布団鯖ヒット＆ブロー
 
-ヒットアンドブローのオンライン対戦webアプリケーション
+リアルタイムで遊べる布団鯖専用のヒット＆ブロー（マスターマインド）風ゲームです。Ably を使った同期待ちロビーとターン管理、GitHub Pages での SPA 配信に対応しています。
 
-## 概要
-
-13個の数字(1-13)から選ばれた4つの正解を当てる推理ゲーム。
-最大4人で対戦し、最も早く正解したプレイヤーが勝利。
-
-## ゲームルール
-
-- 13個の数字の中から4つが正解として設定される
-- プレイヤーは順番に4つの数字を予想
-- 各ターンの制限時間は20秒
-- **ヒット**: 位置と数字が一致
-- **ブロー**: 数字は一致するが位置が異なる
-- 全員の回答履歴が共有される
+## ざっくり仕様
+- **ルール**: 6種類のアイコンから 4 つを並べた正解を当てる。Hit=アイコンと位置が一致、Blow=アイコンのみ一致。
+- **ターン**: 60 秒/ターン。時間切れ時は自動入力で次ターンへ。
+- **ロビー**: 名前＋パスワードで入室。ホストがゲーム開始。途中参加は観戦モード。
+- **離脱処理**: タブ/ブラウザを閉じると `player:leave` を送信しロビーから除外。
+- **リロード/直アクセス**: SPA 404 フォールバック（`404.html`）で `/lobby` 等の直アクセス・更新でも復帰。
 
 ## 技術スタック
+- Frontend: React + Vite + TypeScript
+- State: Zustand
+- Styling: Tailwind CSS
+- Realtime: Ably
+- Hosting: GitHub Pages（SPA fallback 同梱）
 
-- **Frontend**: React + Vite + TypeScript
-- **State Management**: Zustand
-- **Styling**: Tailwind CSS
-- **Realtime**: Ably
-- **Hosting**: GitHub Pages
-
-## セットアップ
-
+## 動かし方
 ```bash
-# 依存パッケージのインストール
-npm install
-
-# 開発サーバーの起動
-npm run dev
-
-# ビルド
-npm run build
-
-# プレビュー
-npm run preview
+npm install           # 依存インストール
+npm run dev           # 開発サーバー
+npm run build         # ビルド
+npm run preview       # ビルド後プレビュー
 ```
-
-## 開発状況
-
-- ✅ 要件定義完了
-- ✅ 環境構築完了
-- 🚧 アプリケーション実装中
-- ⏳ デプロイ準備中
+`.env` に `VITE_ABLY_API_KEY` を設定してください。GitHub Actions では `secrets.VITE_ABLY_API_KEY` をビルド時に注入しています。
 
 ## デプロイ
+`main` への push で GitHub Pages に自動デプロイされます。ビルド後に `dist/index.html` を `dist/404.html` にコピーしているため、直接 URL で開いても SPA として動作します。
 
-GitHub Actionsで自動デプロイされます。
-`main`ブランチにpushすると、GitHub Pagesに自動的にデプロイされます。
-
-## ドキュメント
-
-詳細な要件定義は [要件定義書.md](./要件定義書.md) を参照してください。
+## 要件・設計の詳細
+最新の要件定義は [要件定義書.md](./要件定義書.md) を参照してください。
