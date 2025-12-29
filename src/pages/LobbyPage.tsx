@@ -13,6 +13,7 @@ const LobbyPage = () => {
   const persistedPlayerId = typeof localStorage !== 'undefined' ? localStorage.getItem('playerId') : null
   const name = routeState?.name || persistedName || ''
   const initialized = useRef(false)
+  const lastSeenRef = useRef<Record<string, number>>({})
   const { publish, subscribe, unsubscribe } = useAbly(GAME_CHANNEL)
 
   const {
@@ -134,12 +135,18 @@ const LobbyPage = () => {
       removePlayer(playerId)
     }
 
+    const handlePresencePing = (message: any) => {
+      const { playerId, ts } = message.data
+      lastSeenRef.current[playerId] = ts || Date.now()
+    }
+
     subscribe('player:join', handlePlayerJoin)
     subscribe('player:request-sync', handlePlayerRequestSync)
     subscribe('player:sync-response', handlePlayerSyncResponse)
     subscribe('room:created', handleRoomCreated)
     subscribe('game:start', handleGameStart)
     subscribe('player:leave', handlePlayerLeave)
+    subscribe('presence:ping', handlePresencePing)
 
     return () => {
       unsubscribe('player:join', handlePlayerJoin)
@@ -148,8 +155,9 @@ const LobbyPage = () => {
       unsubscribe('room:created', handleRoomCreated)
       unsubscribe('game:start', handleGameStart)
       unsubscribe('player:leave', handlePlayerLeave)
+      unsubscribe('presence:ping', handlePresencePing)
     }
-  }, [addPlayer, publish, removePlayer, setAnswer, setCurrentTurn, setGameStatus, setHistory, setRoomHost, subscribe, unsubscribe])
+  }, [addPlayer, publish, removePlayer, setAnswer, setCurrentTurn, setGameStatus, setHistory, setRoomHost, setPlayers, subscribe, unsubscribe])
 
   useEffect(() => {
     // 購読が確立した後にプレイヤーを初期化
@@ -204,6 +212,39 @@ const LobbyPage = () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
     }
   }, [publish])
+
+  // 定期ハートビート送信
+  useEffect(() => {
+    const heartbeat = setInterval(() => {
+      const state = useGameStore.getState()
+      if (!state.currentPlayerId) return
+      const ts = Date.now()
+      lastSeenRef.current[state.currentPlayerId] = ts
+      publish('presence:ping', { playerId: state.currentPlayerId, ts })
+    }, 10_000)
+    return () => clearInterval(heartbeat)
+  }, [publish])
+
+  // ハートビートが途絶えたプレイヤーを除去
+  useEffect(() => {
+    const cleaner = setInterval(() => {
+      const now = Date.now()
+      const timeoutMs = 30_000
+      const expired = Object.entries(lastSeenRef.current)
+        .filter(([, ts]) => now - (ts || 0) > timeoutMs)
+        .map(([playerId]) => playerId)
+
+      if (expired.length === 0) return
+
+      expired.forEach((playerId) => {
+        removePlayer(playerId)
+        publish('player:leave', { playerId })
+        delete lastSeenRef.current[playerId]
+      })
+    }, 5_000)
+
+    return () => clearInterval(cleaner)
+  }, [publish, removePlayer])
 
   useEffect(() => {
     if (gameStatus === 'playing') {
