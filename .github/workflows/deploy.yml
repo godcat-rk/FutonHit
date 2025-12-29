@@ -37,6 +37,9 @@ jobs:
         env:
           VITE_ABLY_API_KEY: ${{ secrets.VITE_ABLY_API_KEY }}
 
+      - name: Create SPA fallback
+        run: cp dist/index.html dist/404.html
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 

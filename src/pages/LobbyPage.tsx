@@ -20,6 +20,7 @@ const LobbyPage = () => {
     roomHost,
     currentPlayerId,
     addPlayer,
+    removePlayer,
     createRoom,
     startGame,
     setCurrentPlayerId,
@@ -118,11 +119,17 @@ const LobbyPage = () => {
       setHistory([])
     }
 
+    const handlePlayerLeave = (message: any) => {
+      const { playerId } = message.data
+      removePlayer(playerId)
+    }
+
     subscribe('player:join', handlePlayerJoin)
     subscribe('player:request-sync', handlePlayerRequestSync)
     subscribe('player:sync-response', handlePlayerSyncResponse)
     subscribe('room:created', handleRoomCreated)
     subscribe('game:start', handleGameStart)
+    subscribe('player:leave', handlePlayerLeave)
 
     return () => {
       unsubscribe('player:join', handlePlayerJoin)
@@ -130,8 +137,9 @@ const LobbyPage = () => {
       unsubscribe('player:sync-response', handlePlayerSyncResponse)
       unsubscribe('room:created', handleRoomCreated)
       unsubscribe('game:start', handleGameStart)
+      unsubscribe('player:leave', handlePlayerLeave)
     }
-  }, [addPlayer, publish, setAnswer, setCurrentTurn, setGameStatus, setHistory, setRoomHost, subscribe, unsubscribe])
+  }, [addPlayer, publish, removePlayer, setAnswer, setCurrentTurn, setGameStatus, setHistory, setRoomHost, subscribe, unsubscribe])
 
   useEffect(() => {
     // 購読が確立した後にプレイヤーを初期化
@@ -162,6 +170,21 @@ const LobbyPage = () => {
       publish('player:request-sync', { requesterId: playerId })
     }, 100)
   }, [addPlayer, currentPlayerId, name, navigate, publish, setCurrentPlayerId])
+
+  // ブラウザクローズ時に離脱通知を送る
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const state = useGameStore.getState()
+      if (!state.currentPlayerId) return
+      publish('player:leave', { playerId: state.currentPlayerId })
+      removePlayer(state.currentPlayerId)
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [publish])
 
   useEffect(() => {
     if (gameStatus === 'playing') {
