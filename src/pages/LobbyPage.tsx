@@ -324,7 +324,7 @@ const LobbyPage = () => {
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-300 font-semibold">Lobby</p>
             <h1 className="mt-2 text-3xl lg:text-4xl font-bold text-white">リアルタイムロビー</h1>
-            <p className="text-sm text-slate-200/80 mt-1">プレイヤーが揃ったらホストがゲームを開始できます。</p>
+            <p className="text-sm text-slate-200/80 mt-1">死後の念が残るので落ちる時はログアウトしてね。</p>
           </div>
           {currentPlayer && (
             <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-lg px-4 py-3 text-right">
@@ -365,7 +365,6 @@ const LobbyPage = () => {
                     </div>
                     <div>
                       <p className="text-base font-semibold">{player.name}</p>
-                      <p className="text-xs text-slate-200/70">ID: {player.id.slice(0, 6)}</p>
                     </div>
                   </div>
                   {player.id === roomHost && (
@@ -397,7 +396,7 @@ const LobbyPage = () => {
                   onClick={handleCreateRoom}
                   className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500 px-6 py-3 text-base font-bold text-white shadow-lg shadow-indigo-900/30 transition hover:shadow-indigo-500/50"
                 >
-                  部屋を立てる
+                  READY
                 </button>
               )}
 
@@ -455,7 +454,6 @@ const LobbyPage = () => {
                   {gameStatus === 'playing' && 'ゲーム進行中'}
                 </p>
               </div>
-              {roomHost && <p className="mt-2 text-xs text-slate-200/70">ホスト: {roomHost.slice(0, 8)}</p>}
             </div>
           </div>
         </div>

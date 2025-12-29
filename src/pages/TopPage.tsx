@@ -41,10 +41,10 @@ const TopPage = () => {
             </div>
             <h1 className="mt-4 text-4xl lg:text-5xl font-bold leading-tight text-white">
               布団鯖ヒット＆ブロー
-              <span className="block text-cyan-300">直感と推理で駆けるリアルタイム対戦</span>
+              <span className="block text-cyan-300">完全無料なのにたのしい神ゲー</span>
             </h1>
             <p className="mt-4 text-base text-slate-200/90">
-              鯖民専用のオンライン推理ゲーム。リアルタイムのロビーで合流し、ターンを巡る読み合いの緊張感を楽しもう。
+              鯖民専用のオンライン推理ゲーム。制限時間内に4つのアイコンの並びを当てたら勝利。才能と教養を格付けしよう！
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3 text-sm text-slate-100/80">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -57,7 +57,7 @@ const TopPage = () => {
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-xs uppercase text-cyan-200 tracking-wide">テンポ</p>
-                <p className="mt-1 font-semibold">回答時間 60秒 / 自動入力フォールバック</p>
+                <p className="mt-1 font-semibold">回答時間 60秒 </p>
               </div>
             </div>
           </div>
@@ -124,7 +124,8 @@ const TopPage = () => {
             <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Tips</p>
               <p className="mt-2 text-sm text-slate-700">
-                パスワードを知る友達と一緒にプレイしよう。ロビーで全員が揃ったらホストがゲームを開始できる。
+                布団はhutonじゃなくてfutonだよ<br />
+                URLは流出させないようにね
               </p>
             </div>
           </div>

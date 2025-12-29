@@ -218,28 +218,10 @@ const GamePage = () => {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-300 font-semibold">Gameplay</p>
-              <h1 className="text-3xl font-bold mt-1">FutonHit — Online Duel</h1>
-              <p className="text-sm text-slate-200/80">推理・速度・ターン管理が鍵。ホストが判定し、全員へ同期されます。</p>
+              <h1 className="text-3xl font-bold mt-1">FutonHit</h1>
+              <p className="text-sm text-slate-200/80">更新すると追い出されるからやめてね</p>
               <p className="mt-1 text-xs text-slate-200/70">プレイ中 {activeCount} 人</p>
             </div>
-          </div>
-          <div className="flex gap-2 overflow-x-auto">
-            {activePlayers.map((p, idx) => (
-              <div
-                key={p.id}
-                className={`flex items-center gap-2 rounded-2xl px-3 py-2 border ${
-                  idx === currentTurn
-                    ? 'border-emerald-300/60 bg-emerald-500/20 text-emerald-100'
-                    : 'border-white/10 bg-white/5 text-white'
-                }`}
-              >
-                <span className="w-6 h-6 rounded-full bg-white/10 border border-white/20 text-xs font-bold flex items-center justify-center">
-                  {idx + 1}
-                </span>
-                <span className="text-sm font-semibold">{p.name}</span>
-                {idx === currentTurn && <span className="text-[11px] font-bold text-emerald-100">ターン中</span>}
-              </div>
-            ))}
           </div>
         </div>
 
